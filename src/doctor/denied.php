@@ -368,8 +368,8 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="logo">
-            <img src="../../assets/white.png" alt="logo" width="45">
-            <img src="../../assets/CHO logo.png" alt="logo 2" width="45">
+            <img src="../../assets/pictures/white.png" alt="logo" width="45">
+            <img src="../../assets/pictures/CHO logo.png" alt="logo 2" width="45">
             <h4 class="cho-label">CHO</h4>
         </div>
         <hr> <!-- Horizontal line stretching from logo area -->
@@ -453,7 +453,8 @@
             </div>
 
             <div class="d-flex align-items-center">
-                <span class="badge bg-danger text-white text-center" style="font-size: 1rem; width: 100px; padding: 0.5rem 0;">Feedback</span>
+                <span class="badge bg-danger text-white text-center"
+                    style="font-size: 1rem; width: 100px; padding: 0.5rem 0;">Feedback</span>
                 <a href="#" class="view-link text-primary text-decoration-none">
                     <i class="fas fa-eye me-1 ms-5"></i> View Applicant
                 </a>
@@ -470,7 +471,8 @@
             </div>
 
             <div class="d-flex align-items-center">
-                <span class="badge bg-danger text-white text-center" style="font-size: 1rem; width: 100px; padding: 0.5rem 0;">Feedback</span>
+                <span class="badge bg-danger text-white text-center"
+                    style="font-size: 1rem; width: 100px; padding: 0.5rem 0;">Feedback</span>
                 <a href="#" class="view-link text-primary text-decoration-none">
                     <i class="fas fa-eye me-1 ms-5"></i> View Applicant
                 </a>
@@ -488,7 +490,8 @@
             </div>
 
             <div class="d-flex align-items-center">
-                <span class="badge bg-danger text-white text-center" style="font-size: 1rem; width: 100px; padding: 0.5rem 0;">Feedback</span>
+                <span class="badge bg-danger text-white text-center"
+                    style="font-size: 1rem; width: 100px; padding: 0.5rem 0;">Feedback</span>
                 <a href="#" class="view-link text-primary text-decoration-none">
                     <i class="fas fa-eye me-1 ms-5"></i> View Applicant
                 </a>
@@ -505,7 +508,8 @@
             </div>
 
             <div class="d-flex align-items-center">
-                <span class="badge bg-danger text-white text-center" style="font-size: 1rem; width: 100px; padding: 0.5rem 0;">Feedback</span>
+                <span class="badge bg-danger text-white text-center"
+                    style="font-size: 1rem; width: 100px; padding: 0.5rem 0;">Feedback</span>
                 <a href="#" class="view-link text-primary text-decoration-none">
                     <i class="fas fa-eye me-1 ms-5"></i> View Applicant
                 </a>
@@ -522,7 +526,8 @@
             </div>
 
             <div class="d-flex align-items-center">
-                <span class="badge bg-danger text-white text-center" style="font-size: 1rem; width: 100px; padding: 0.5rem 0;">Feedback</span>
+                <span class="badge bg-danger text-white text-center"
+                    style="font-size: 1rem; width: 100px; padding: 0.5rem 0;">Feedback</span>
                 <a href="#" class="view-link text-primary text-decoration-none">
                     <i class="fas fa-eye me-1 ms-5"></i> View Applicant
                 </a>
@@ -539,7 +544,8 @@
             </div>
 
             <div class="d-flex align-items-center">
-                <span class="badge bg-danger text-white text-center" style="font-size: 1rem; width: 100px; padding: 0.5rem 0;">Feedback</span>
+                <span class="badge bg-danger text-white text-center"
+                    style="font-size: 1rem; width: 100px; padding: 0.5rem 0;">Feedback</span>
                 <a href="#" class="view-link text-primary text-decoration-none">
                     <i class="fas fa-eye me-1 ms-5"></i> View Applicant
                 </a>
@@ -556,7 +562,8 @@
             </div>
 
             <div class="d-flex align-items-center">
-                <span class="badge bg-danger text-white text-center" style="font-size: 1rem; width: 100px; padding: 0.5rem 0;">Feedback</span>
+                <span class="badge bg-danger text-white text-center"
+                    style="font-size: 1rem; width: 100px; padding: 0.5rem 0;">Feedback</span>
                 <a href="#" class="view-link text-primary text-decoration-none">
                     <i class="fas fa-eye me-1 ms-5"></i> View Applicant
                 </a>
