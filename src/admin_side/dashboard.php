@@ -19,7 +19,7 @@
 
   <div class="sidebar">
     <div class="logo">
-      <img src="../../assets/white.png" alt="logo" width="40">
+      <img src="../../assets/pictures/white.png" alt="logo" width="40">
       <h4>PDAO</h4>
     </div>
     <hr> <!-- Horizontal line stretching from logo area -->

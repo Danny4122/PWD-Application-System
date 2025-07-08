@@ -20,14 +20,14 @@
       <div class="left-content">
         <h1>Welcome to PWD<br>Online Application</h1>
         <p>Start your PWD application — create your account today.</p>
-        <img src="../../assets/PWD.png" alt="PWD Illustration">
+        <img src="../../assets/pictures/PWD.png" alt="PWD Illustration">
       </div>
     </div>
 
     <!-- Right Section -->
     <div class="right-panel">
       <div class="login-card">
-        <img src="../../assets/Logo.jpg" class="logo" alt="PWD Logo">
+        <img src="../../assets/pictures/Logo.jpg" class="logo" alt="PWD Logo">
         <p class="intro-text">Sign up to start your PWD registration journey.</p>
         <form action="admin_login_process.php" method="POST">
           <div class="form-group">
@@ -50,7 +50,7 @@
           </p>
         </form>
       </div>
-      <img src="../../assets/iligan.png" class="iligan-logo" alt="Iligan Logo">
+      <img src="../../assets/pictures/iligan.png" class="iligan-logo" alt="Iligan Logo">
     </div>
   </div>
 </body>

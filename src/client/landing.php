@@ -9,8 +9,8 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet" />
 
-  <!-- Global CSS -->
-  <link rel="stylesheet" href="css/landing.css">
+  <link rel="stylesheet" href="../../assets/css/client/landing.css">
+
 </head>
 
 <body>
@@ -22,8 +22,8 @@
         <p>Easily apply for your PWD ID online with our user-friendly system</p>
       </div>
       <div class="logo-row justify-content-center">
-        <img src="../../assets/white.png" alt="PDAO Logo" />
-        <img src="../../assets/LGU.png" alt="City of Iligan Logo" />
+        <img src="../../assets/pictures/white.png" alt="PDAO Logo" />
+        <img src="../../assets/pictures/LGU.png" alt="City of Iligan Logo" />
       </div>
     </div>
   </section>

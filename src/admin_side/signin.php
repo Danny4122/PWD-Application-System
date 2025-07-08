@@ -20,14 +20,14 @@
       <div class="left-content">
         <h1>Welcome to PWD<br>Admin Portal</h1>
         <p>Dedicated to Better Accessibility<br> and Support.</p>
-        <img src="../../assets/admin.png" alt="PWD Illustration">
+        <img src="../../assets/pictures/admin.png" alt="PWD Illustration">
       </div>
     </div>
 
     <!-- Right Section -->
     <div class="right-panel">
       <div class="login-card">
-        <img src="../../assets/Logo.jpg" class="logo" alt="PWD Logo">
+        <img src="../../assets/pictures/Logo.jpg" class="logo" alt="PWD Logo">
         <p style="font-size: 1.3rem; font-weight: 600;">Sign in as...</p>
 
         <!-- Toggle Role -->
@@ -56,7 +56,7 @@
           <button type="submit" class="btn btn-login">Sign In</button>
         </form>
       </div>
-      <img src="../../assets/iligan.png" class="iligan-logo" alt="Iligan Logo">
+      <img src="../../assets/pictures/iligan.png" class="iligan-logo" alt="Iligan Logo">
     </div>
   </div>
 
