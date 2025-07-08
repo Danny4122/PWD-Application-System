@@ -14,8 +14,6 @@
     <link rel="stylesheet" href="../../assets/css/global/component.css">
 
     <style>
-       
-
         .search-bar input {
             padding: 6px 10px;
             border-radius: 4px;
