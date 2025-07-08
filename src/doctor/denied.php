@@ -13,116 +13,6 @@
     <link rel="stylesheet" href="../../assets/css/global/layout.css">
     <link rel="stylesheet" href="../../assets/css/global/component.css">
 
-    <style>
-        .search-bar input {
-            padding: 6px 10px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-        }
-
-        .search-bar {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 14px;
-        }
-
-        .search-bar label {
-            font-weight: 500;
-            color: #333;
-        }
-
-        .search-bar input[type="text"] {
-            padding: 8px 14px;
-            font-size: 14px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            transition: border 0.3s ease;
-            width: 250px;
-        }
-
-        .search-bar input[type="text"]:focus {
-            border-color: #3f71e8;
-            outline: none;
-            box-shadow: 0 0 3px rgba(63, 113, 232, 0.3);
-        }
-
-
-        .download-btn {
-            background-color: white;
-            color: #1e40af;
-            border: 1px solid #1e40af;
-            border-radius: 20px;
-            padding: 6px 14px;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        .section-header {
-            background-color: #3f71e8;
-            color: white;
-            padding: 12px 20px;
-            margin-top: 20px;
-            border-radius: 8px;
-            font-size: 20px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .member-list {
-            background-color: white;
-            margin-top: 10px;
-            border-radius: 6px;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid #eee;
-        }
-
-        .member-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .member-info .avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: #e1e1e1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 18px;
-        }
-
-        .pagination {
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-            gap: 5px;
-        }
-
-        .pagination button {
-            background: white;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            padding: 6px 12px;
-            cursor: pointer;
-        }
-
-        .pagination button.active {
-            background: #3f71e8;
-            color: white;
-        }
-
-        .view-link {
-            color: #3f71e8;
-            text-decoration: none;
-        }
-    </style>
 </head>
 
 <body>
@@ -206,9 +96,8 @@
 
         <div class="member-list">
             <div class="member-info">
-                <div class="avatar"><i class="fas fa-user"></i></div>
                 <div>
-                    <div>Danny Boy Loberanes Jr.</div>
+                    <div><b>Danny Boy Loberanes Jr.</b></div>
                     <div style="font-size: 12px;">Dalipuga, Iligan City</div>
                 </div>
             </div>
@@ -224,9 +113,8 @@
 
         <div class="member-list">
             <div class="member-info">
-                <div class="avatar"><i class="fas fa-user"></i></div>
                 <div>
-                    <div>Thea Ancog</div>
+                    <div><b>Thea Ancog</b></div>
                     <div style="font-size: 12px;">Acmac, Iligan City</div>
                 </div>
             </div>
@@ -243,9 +131,8 @@
 
         <div class="member-list">
             <div class="member-info">
-                <div class="avatar"><i class="fas fa-user"></i></div>
                 <div>
-                    <div>Maxine Joyce Lesondra</div>
+                    <div><b>Maxine Joyce Lesondra</b></div>
                     <div style="font-size: 12px;">Luinab, Iligan City</div>
                 </div>
             </div>
@@ -261,9 +148,8 @@
 
         <div class="member-list">
             <div class="member-info">
-                <div class="avatar"><i class="fas fa-user"></i></div>
                 <div>
-                    <div>Jielven Rose Baraquel</div>
+                    <div><b>Jielven Rose Baraquel</b></div>
                     <div style="font-size: 12px;">Santa Filomena, Iligan City</div>
                 </div>
             </div>
@@ -279,9 +165,8 @@
 
         <div class="member-list">
             <div class="member-info">
-                <div class="avatar"><i class="fas fa-user"></i></div>
                 <div>
-                    <div>Rosemarie Dela Cruz</div>
+                    <div><b>Rosemarie Dela Cruz</b></div>
                     <div style="font-size: 12px;">Acmac, Iligan City</div>
                 </div>
             </div>
@@ -297,9 +182,8 @@
 
         <div class="member-list">
             <div class="member-info">
-                <div class="avatar"><i class="fas fa-user"></i></div>
                 <div>
-                    <div>Mary Grace Luna</div>
+                    <div><b>Mary Grace Luna</b></div>
                     <div style="font-size: 12px;">Luinab, Iligan City</div>
                 </div>
             </div>
@@ -315,9 +199,8 @@
 
         <div class="member-list">
             <div class="member-info">
-                <div class="avatar"><i class="fas fa-user"></i></div>
                 <div>
-                    <div>Rosie Ong</div>
+                    <div><b>Rosie Ong</b></div>
                     <div style="font-size: 12px;">Tambo, Iligan City</div>
                 </div>
             </div>
