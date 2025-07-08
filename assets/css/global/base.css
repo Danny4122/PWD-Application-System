@@ -17,9 +17,9 @@ hr {
 }
 
 .cho-label {
-      font-size: 0px;
-      font-weight: bold;
-      /* font-family: Arial, sans-serif; */
+      font-size: 18px;
+      font-weight: 600;
       color: #ffffff;
-      padding-left: 20px;
+      padding-left: 12px;
+      margin-top: 4px;
 }

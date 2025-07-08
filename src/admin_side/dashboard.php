@@ -58,15 +58,22 @@
 
     <a><i class="fas fa-sign-out-alt me-2"></i><span>Logout</span></a>
   </div>
+
   <div class="main">
-    <div class="topbar">
+    <div class="topbar d-flex justify-content-between align-items-center">
       <div class="d-flex align-items-center">
         <div class="toggle-btn" onclick="toggleSidebar()">
           <i class="fas fa-bars"></i>
         </div>
-        <h5 class="ms-3" style="font-weight: bold;">Dashboard</h5>
       </div>
-      <p><strong>Danny Boy Loberanes Jr.</strong> <i class="fas fa-user-circle ms-2"></i></p>
+
+      <div class="d-flex flex-column align-items-end">
+        <div class="d-flex align-items-center ms-3 mt-2 mb-2" style="font-size: 1.4rem;">
+          <strong>Danny Boy Loberanes Jr.</strong>
+          <i class="fas fa-user-circle ms-3 me-2 mb-2 mt-2" style="font-size: 2.5rem;"></i>
+        </div>
+
+      </div>
     </div>
 
     <div class="cards">

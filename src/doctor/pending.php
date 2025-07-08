@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pending</title>
+    <title>CHO Pending Applications</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -21,7 +21,7 @@
         <div class="logo">
             <img src="../../assets/pictures/white.png" alt="logo" width="45">
             <img src="../../assets/pictures/CHO logo.png" alt="logo 2" width="45">
-            <h4 class="cho-label">CHO</h4>
+            <h4>CHO</h4>
         </div>
         <hr> <!-- Horizontal line stretching from logo area -->
         <a class="active"><i class="fas fa-chart-line me-2"></i><span>Dashboard</span></a>

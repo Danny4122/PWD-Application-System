@@ -12,16 +12,16 @@
   <link rel="stylesheet" href="../../assets/css/global/base.css">
   <link rel="stylesheet" href="../../assets/css/global/layout.css">
   <link rel="stylesheet" href="../../assets/css/global/component.css">
-
+  
 </head>
 
 <body>
   <!-- Sidebar -->
   <div class="sidebar">
     <div class="logo">
-      <img src="../../assets/white.png" alt="logo" width="45">
-      <img src="../../assets/CHO logo.png" alt="logo 2" width="45">
-      <h4 class="cho-label">CHO</h4>
+      <img src="../../assets/pictures/white.png" alt="logo" width="45">
+      <img src="../../assets/pictures/CHO logo.png" alt="logo 2" width="45">
+      <h4>CHO</h4>
     </div>
     <hr> <!-- Horizontal line stretching from logo area -->
     <a class="active"><i class="fas fa-chart-line me-2"></i><span>Dashboard</span></a>
