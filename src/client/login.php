@@ -8,7 +8,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 
-  <link rel="stylesheet" href="css/login_signup.css">
+  <link rel="stylesheet" href="../../assets/css/global/login_signup.css">
 </head>
 
 <body>
