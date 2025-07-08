@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,106 +8,17 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
 
-  <style>
-    body {
-      background-color: #f4f8fb;
-      font-family: 'Segoe UI', sans-serif;
-      color: #1e1e1e;
-    }
+  <link rel="stylesheet" href="css/view_a.css">
 
-    .card-header-gradient {
-      background: linear-gradient(to right, #1F54DC, #2B26AA);
-      color: white;
-      border-radius: 1rem 1rem 0 0;
-    }
-
-    .card-header-gradient .avatar-icon {
-      width: 60px;
-      height: 60px;
-      background: #ffffff;
-      color: #2B26AA;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      font-size: 1.8rem;
-    }
-
-    .card-body-section {
-      background: white;
-      border-radius: 0 0 1rem 1rem;
-      padding: 2.5rem;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
-    }
-
-    .section h6 {
-      font-weight: bold;
-      color: #2B26AA;
-      margin-bottom: 1rem;
-      border-bottom: 2px solid #eee;
-      padding-bottom: 8px;
-    }
-
-    .info-label {
-      font-weight: 600;
-      color: #555;
-      margin-bottom: 5px;
-    }
-
-    .info-value {
-      margin-bottom: 5px;
-    }
-
-    .document-preview {
-      max-height: 150px;
-      width: auto;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-
-    .btn-back {
-      background-color: #2B26AA;
-      color: white;
-      border-radius: 50px;
-      padding: 12px 30px;
-      text-decoration: none;
-      font-weight: 600;
-    }
-
-    .btn-back:hover {
-      background-color: #1F54DC;
-      color: white;
-    }
-
-    .badge {
-      border-radius: 50px;
-      font-weight: 600;
-      padding: 0.5rem 1rem;
-      font-size: 0.85rem;
-    }
-
-    .btn-edit {
-      font-weight: 600;
-    }
-
-    .row.g-1 {
-  row-gap: 0.5rem !important; 
-}
-
-
-    @media (max-width: 768px) {
-      .card-header-gradient h4 {
-        font-size: 1.3rem;
-      }
-    }
-  </style>
 </head>
+
 <body>
 
   <div class="container mt-5">
     <!-- Header Card -->
     <div class="card border-0 shadow rounded-4">
-      <div class="card-header-gradient d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 p-4">
+      <div
+        class="card-header-gradient d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 p-4">
         <div class="d-flex align-items-center gap-3">
           <div class="avatar-icon"><i class="bi bi-person-lines-fill"></i></div>
           <div>
@@ -126,26 +38,26 @@
       <div class="card-body-section">
         <!-- Personal Info -->
         <div class="section mb-4">
-  <h6><i class="bi bi-person-fill me-1"></i>Personal Information</h6>
-  <div class="row g-1"> <!-- added g-1 for tighter spacing -->
-    <div class="col-md-6">
-      <div class="info-label">Full Name</div>
-      <div class="info-value">Danny Boy Loberanes Jr.</div>
-    </div>
-    <div class="col-md-6">
-      <div class="info-label">Barangay</div>
-      <div class="info-value">Dalipuga, Iligan City</div>
-    </div>
-    <div class="col-md-6">
-      <div class="info-label">Birthdate</div>
-      <div class="info-value">January 10, 1995</div>
-    </div>
-    <div class="col-md-6">
-      <div class="info-label">Contact</div>
-      <div class="info-value">0917 123 4567</div>
-    </div>
-  </div>
-</div>
+          <h6><i class="bi bi-person-fill me-1"></i>Personal Information</h6>
+          <div class="row g-1"> <!-- added g-1 for tighter spacing -->
+            <div class="col-md-6">
+              <div class="info-label">Full Name</div>
+              <div class="info-value">Danny Boy Loberanes Jr.</div>
+            </div>
+            <div class="col-md-6">
+              <div class="info-label">Barangay</div>
+              <div class="info-value">Dalipuga, Iligan City</div>
+            </div>
+            <div class="col-md-6">
+              <div class="info-label">Birthdate</div>
+              <div class="info-value">January 10, 1995</div>
+            </div>
+            <div class="col-md-6">
+              <div class="info-label">Contact</div>
+              <div class="info-value">0917 123 4567</div>
+            </div>
+          </div>
+        </div>
 
         <!-- Disability Info -->
         <div class="section mb-5">
@@ -219,4 +131,5 @@
   </div>
 
 </body>
+
 </html>

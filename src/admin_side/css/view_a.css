@@ -1,0 +1,93 @@
+/* Only for view_a */
+
+body {
+    background-color: #f4f8fb;
+    font-family: 'Segoe UI', sans-serif;
+    color: #1e1e1e;
+}
+
+.card-header-gradient {
+    background: linear-gradient(to right, #1F54DC, #2B26AA);
+    color: white;
+    border-radius: 1rem 1rem 0 0;
+}
+
+.card-header-gradient .avatar-icon {
+    width: 60px;
+    height: 60px;
+    background: #ffffff;
+    color: #2B26AA;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 1.8rem;
+}
+
+.card-body-section {
+    background: white;
+    border-radius: 0 0 1rem 1rem;
+    padding: 2.5rem;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+}
+
+.section h6 {
+    font-weight: bold;
+    color: #2B26AA;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 8px;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+.info-value {
+    margin-bottom: 5px;
+}
+
+.document-preview {
+    max-height: 150px;
+    width: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.btn-back {
+    background-color: #2B26AA;
+    color: white;
+    border-radius: 50px;
+    padding: 12px 30px;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.btn-back:hover {
+    background-color: #1F54DC;
+    color: white;
+}
+
+.badge {
+    border-radius: 50px;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+}
+
+.btn-edit {
+    font-weight: 600;
+}
+
+.row.g-1 {
+    row-gap: 0.5rem !important;
+}
+
+
+@media (max-width: 768px) {
+    .card-header-gradient h4 {
+        font-size: 1.3rem;
+    }
+}
