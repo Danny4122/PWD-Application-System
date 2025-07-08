@@ -7,7 +7,6 @@
   <title>PDAO Admin Dashboard</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link href="https://cdn.jsdelivr.net/npm/b  ootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/css/global/layout.css">
 
   <!-- External Global CSS -->
   <link rel="stylesheet" href="/assets/css/global/base.css">
@@ -109,7 +108,7 @@
 
   <div class="sidebar">
     <div class="logo">
-      <img src="/assets/white.png" alt="logo" width="40">
+      <img src="/assets/pictures/white.png" alt="logo" width="40">
       <h4>PDAO</h4>
     </div>
     <hr>

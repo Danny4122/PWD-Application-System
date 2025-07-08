@@ -39,7 +39,7 @@
   <nav class="navbar navbar-expand-lg" style="background-color: #14255A;">
   <div class="container-fluid">
     <a class="navbar-brand text-white" href="#">
-      <img src="../../assets/white.png" alt="Logo" width="32" height="32" class="me-2" />
+      <img src="../../assets/pictures/white.png" alt="Logo" width="32" height="32" class="me-2" />
       Persons with Disabilities Affairs Office
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
