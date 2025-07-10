@@ -129,23 +129,19 @@
           <label class="form-label fw-semibold text-primary">Cause of Disability</label>
           <div class="d-flex gap-3 mb-2" style="font-size: 0.75rem;">
             <div class="form-check mb-0">
-              <input class="form-check-input" type="checkbox" id="causeCongenital" name="cause[]"
-                value="Congenital / Inborn">
+              <input class="form-check-input" type="radio" id="causeCongenital" name="cause"
+                value="Congenital / Inborn" onchange="updateOptions(this.value)">
               <label class="form-check-label" for="causeCongenital">Congenital / Inborn</label>
             </div>
             <div class="form-check mb-0">
-              <input class="form-check-input" type="checkbox" id="causeAcquired" name="cause[]" value="Acquired">
+              <input class="form-check-input" type="radio" id="causeAcquired" name="cause"
+                value="Acquired" onchange="updateOptions(this.value)">
               <label class="form-check-label" for="causeAcquired">Acquired</label>
             </div>
           </div>
-          <select id="cause" class="form-select">
+
+          <select id="causeSelect" class="form-select">
             <option value="">Please Select</option>
-            <option>Autism</option>
-            <option>ADHD</option>
-            <option>Cerebral Palsy</option>
-            <option>Down Syndrome</option>
-            <option>Chronic Illness</option>
-            <option>Injury</option>
           </select>
         </div>
 
@@ -189,6 +185,28 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+  const causeSelect = document.getElementById('causeSelect');
+
+  function updateOptions(type) {
+    let options = [];
+
+    if (type === "Congenital / Inborn") {
+      options = ["Autism", "ADHD", "Cerebral Palsy", "Down Syndrome"];
+    } else if (type === "Acquired") {
+      options = ["Chronic Illness", "Cerebral Palsy", "Injury"];
+    }
+
+    causeSelect.innerHTML = '<option value="">Please Select</option>';
+
+    options.forEach(opt => {
+      const optionElement = document.createElement('option');
+      optionElement.textContent = opt;
+      optionElement.value = opt;
+      causeSelect.appendChild(optionElement);
+    });
+  }
+</script>
 </body>
 
 </html>
