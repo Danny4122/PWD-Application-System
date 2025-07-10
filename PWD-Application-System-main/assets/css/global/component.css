@@ -1,0 +1,178 @@
+/* /* Cards, buttons, badges, chart boxes, modals */
+/* Reusable UI components */
+
+.cards {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.card-stat {
+    flex: 1;
+    position: relative;
+    min-width: 200px;
+    background-color: #2b2bb2;
+    color: white;
+    padding: 20px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+
+.card-stat::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 20px;
+    width: 100%;
+    background-color: rgb(26, 26, 35);
+    opacity: 30%;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.card-stat i {
+    font-size: 2rem;
+}
+
+.chart-container {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-menu {
+    background: transparent;
+}
+
+.dropdown-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.no-wrap {
+    white-space: nowrap;
+}
+
+/* Search Bar CSS */
+.search-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.search-bar input {
+    padding: 6px 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+}
+
+.search-bar label {
+    font-weight: 500;
+    color: #333;
+}
+
+.search-bar input[type="text"] {
+    padding: 8px 14px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    transition: border 0.3s ease;
+    width: 250px;
+}
+
+.search-bar input[type="text"]:focus {
+    border-color: #3f71e8;
+    outline: none;
+    box-shadow: 0 0 3px rgba(63, 113, 232, 0.3);
+}
+
+/* Download Button CSS */
+.download-btn {
+    background-color: white;
+    color: #1e40af;
+    border: 1px solid #1e40af;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+/* Table Components CSS */
+.member-list {
+    background-color: white;
+    margin-top: 10px;
+    border-radius: 6px;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #eee;
+}
+
+.member-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.member-info .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #e1e1e1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    gap: 5px;
+}
+
+.pagination button {
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+
+.pagination button.active {
+    background: #3f71e8;
+    color: white;
+}
+
+.section-header {
+    background-color: #3f71e8;
+    color: white;
+    padding: 12px 20px;
+    margin-top: 20px;
+    border-radius: 8px;
+    font-size: 20px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+}
+
+.view-link {
+    color: #3f71e8;
+    text-decoration: none;
+}
