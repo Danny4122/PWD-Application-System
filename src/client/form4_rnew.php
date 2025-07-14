@@ -6,9 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PWD Online Application</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-
   <link rel="stylesheet" href="../../assets/css/global/forms.css">
-
 </head>
 
 <body>
@@ -44,42 +42,66 @@
   </div>
 
   <div class="container my-4 p-5 bg-white rounded shadow-sm" style="max-width: 700px;">
-    <label class="form-label fw-semibold" style="font-size: 1.00rem;">
-      Upload Previous PWD ID
-      <span class="fw-normal" style="font-size: 1.00rem;">(Clear Photo or Scanned Copy).</span>
-    </label>
-
-    <!-- Upload Box -->
-    <div id="drop-area" <div
-      class="rounded d-flex flex-column justify-content-center align-items-center text-center p-3 my-3"
-      style="border: 2px dashed #ccc; background-color: #f8f9fa; height: 230px;">
-      <img src="https://cdn-icons-png.flaticon.com/512/892/892692.png" alt="Upload Icon" width="50" class="mb-1" />
-      <div class="fw-semibold mb-1">Upload a Photo</div>
-      <div class="text-muted" style="font-size: 0.85rem;">Drag and drop files here</div>
-      <input id="fileElem" type="file" class="form-control mt-3" style="max-width: 300px;" />
-    </div>
-
-
-    <div class="mb-4">
-      <label for="medicalCert" class="form-label">Upload Proof of Disability (PHOTO):</label>
-      <div class="upload-box">
-        <img src="/assets/add-image.png" alt="Upload Icon" width="60" class="mb-1" />
-        <div class="fw-semibold mb-1">Upload a Photo</div>
-        <div class="text-muted" style="font-size: 0.85rem;">Drag and drop files here</div>
-        <input id="medicalCert" name="medicalCert" type="file" class="form-control mt-3" style="max-width: 300px;" />
+    <form>
+      <!-- Previous PWD ID -->
+      <div class="mb-4">
+        <label for="prevPwdId" class="form-label fw-semibold">
+          Upload Previous PWD ID
+          <span class="fw-normal">(Clear Photo or Scanned Copy)</span>
+        </label>
+        <div class="upload-box rounded d-flex flex-column justify-content-center align-items-center text-center p-2" style="height: 230px;">
+          <img src="https://cdn-icons-png.flaticon.com/512/892/892692.png" alt="Upload Icon" class="mb-2" />
+          <div class="fw-semibold mb-1">Upload a Photo</div>
+          <div class="text-muted indicator mb-3">Drag and drop files here</div>
+          <input id="prevPwdId" name="prevPwdId" type="file" accept="image/*" class="form-control" style="max-width: 300px;"/>
+        </div>
       </div>
-    </div>
 
-    <div class="mb-4">
-      <label for="medicalCert" class="form-label">Upload Proof of Disability (VIDEO):</label>
-      <div class="upload-box text-center">
-        <img src="/assets/upload.png" alt="Video Upload Icon" width="60" class="mb-1" />
-        <div class="fw-semibold mb-1">Upload Video</div>
-        <div class="text-muted" style="font-size: 0.85rem;">Drag and drop files here</div>
-        <input id="medicalCert" name="medicalCert" type="file" class="form-control mt-3" style="max-width: 300px;" />
+      <div class="mb-4">
+        <label for="wholeBodyPic" class="form-label">Upload 1 whole body picture:</label>
+        <div class="upload-box drop-area rounded d-flex flex-column justify-content-center align-items-center text-center p-3 mb-2" style="height: 230px;">
+          <img src="https://cdn-icons-png.flaticon.com/512/892/892692.png" alt="" class="mb-1" />
+          <div class="fw-semibold mb-1">Upload a Photo</div>
+          <div class="text-muted indicator mb-2">Drag and drop files here</div>
+          <input id="wholeBodyPic" name="wholeBodyPic" type="file" accept="image/*"
+                 class="form-control" style="max-width: 300px;" />
+        </div>
       </div>
-    </div>
 
+      <!-- Barangay Certificate -->
+      <div class="mb-4">
+        <label for="barangayCert" class="form-label">
+          Upload Barangay Certificate of Residency / Certificate of Indigency:
+        </label>
+        <div class="upload-box drop-area rounded d-flex flex-column justify-content-center align-items-center text-center p-3 mb-2" style="height: 230px;">
+          <img src="https://cdn-icons-png.flaticon.com/512/892/892692.png" alt="Upload Icon" class="mb-1" />
+          <div class="fw-semibold mb-1">Upload a Photo</div>
+          <div class="text-muted indicator mb-2">Drag and drop files here</div>
+          <input id="barangayCert" name="barangayCert" type="file" accept="image/*" class="form-control" style="max-width: 300px;" />
+        </div>
+      </div>
+
+      <!-- Medical Certificate -->
+      <div class="mb-4">
+        <label for="medicalCert" class="form-label">Upload Medical Certificate:</label>
+        <div class="upload-box drop-area rounded d-flex flex-column justify-content-center align-items-center text-center p-3 mb-2" style="height: 230px;">
+          <img src="https://cdn-icons-png.flaticon.com/512/892/892692.png" alt="Upload Icon" class="mb-1" />
+          <div class="fw-semibold mb-1">Upload a Photo</div>
+          <div class="text-muted indicator mb-2">Drag and drop files here</div>
+          <input id="medicalCert" name="medicalCert" type="file" accept="image/*" class="form-control" style="max-width: 300px;" />
+        </div>
+      </div>
+
+      <!-- Proof of Disability -->
+      <div class="mb-4">
+        <label for="proofDisability" class="form-label">Upload Proof of Disability (PHOTO):</label>
+        <div class="upload-box drop-area rounded d-flex flex-column justify-content-center align-items-center text-center p-3 mb-2" style="height: 230px;">
+          <img src="/assets/pictures/add-image.png" alt="Upload Icon" class="mb-1" />
+          <div class="fw-semibold mb-1">Upload a Photo</div>
+          <div class="text-muted indicator mb-2">Drag and drop files here</div>
+          <input id="proofDisability" name="proofDisability" type="file" accept="image/*" class="form-control" style="max-width: 300px;" />
+        </div>
+      </div>
 
     <!-- Buttons -->
     <div class="d-flex justify-content-between">
@@ -88,32 +110,24 @@
     </div>
   </div>
 
-  <script>
-    const dropArea = document.getElementById('drop-area');
-    const fileInput = document.getElementById('fileElem');
-
-    // Prevent default behavior for drag events
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-      dropArea.addEventListener(eventName, (e) => e.preventDefault(), false);
-    });
-
-    // Highlight drop area on dragover
-    dropArea.addEventListener('dragover', () => {
-      dropArea.classList.add('border-primary');
-    });
-
-    dropArea.addEventListener('dragleave', () => {
-      dropArea.classList.remove('border-primary');
-    });
-
-    dropArea.addEventListener('drop', (e) => {
-      dropArea.classList.remove('border-primary');
-      const files = e.dataTransfer.files;
-
-      if (files.length > 0) {
-        // Assign dropped files to input element
-        fileInput.files = files;
-        alert(`File dropped: ${files[0].name}`);
-      }
-    });
-  </script>
+    <script>
+      document.querySelectorAll('.drop-area').forEach(dropArea => {
+        const input = dropArea.querySelector('input[type="file"]');
+        input.addEventListener('click', e => e.stopPropagation());
+        ['dragenter','dragover','dragleave','drop'].forEach(evt =>
+          dropArea.addEventListener(evt, e => {
+            e.preventDefault();
+            e.stopPropagation();
+          })
+        );
+        dropArea.addEventListener('dragover', () => dropArea.classList.add('drag-over'));
+        dropArea.addEventListener('dragleave', () => dropArea.classList.remove('drag-over'));
+        dropArea.addEventListener('drop', e => {
+          dropArea.classList.remove('drag-over');
+          if (e.dataTransfer.files.length) {
+            input.files = e.dataTransfer.files;
+          }
+        });
+        dropArea.addEventListener('click', () => input.click());
+      });
+    </script>
