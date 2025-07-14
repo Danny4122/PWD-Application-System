@@ -14,8 +14,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         if (password_verify($password, $user['password_hash'])) {
             // Store session variables
-            $_SESSION['user_id'] = $user['user_id'];
-            $_SESSION['email'] = $user['email'];
+              $_SESSION['user_email'] = $user['email'];
+              $_SESSION['first_name'] = $user['first_name']; // ✅ important
+              $_SESSION['last_name'] = $user['last_name'];
+             $_SESSION['user_id'] = $user['id']; // optional if needed
+
+
 
             // Redirect to dashboard or next step
             header("Location: ../../public/index.php");

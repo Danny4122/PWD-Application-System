@@ -1,3 +1,9 @@
+<?php
+session_start();
+?>
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -56,16 +62,30 @@
 
 
   <!-- Welcome Text and Action Buttons -->
-  <div class="flex flex-col items-end text-right">
-    <!-- Welcome Text -->
-    <div>
-      <h1 class="text-2xl md:text-3xl font-bold">Welcome to PWD Online Application!</h1>
-      <p class="text-sm md:text-base mt-1">
-        Iligan City's official platform for empowering Persons with Disabilities through fast and inclusive ID processing.
-      </p>
+  
+<?php if (isset($_SESSION['first_name'])): ?>
+  <a href="/public/logout.php" 
+     class="absolute top-4 right-6 text-sm text-white-200 underline hover:text-red-400 z-50">
+     Logout
+  </a>
+<?php endif; ?>
+      <div>
+        <h1 class="text-2xl md:text-3xl font-bold">
+          <?php
+            if (isset($_SESSION['first_name'])) {
+              echo "Welcome to PWD Online Application, " . htmlspecialchars($_SESSION['first_name']) . "!";
+            } else {
+              echo "Welcome to PWD Online Application!";
+            }
+          ?>
+        </h1>
+        <p class="text-sm md:text-base mt-1">
+          Iligan City's official platform for empowering Persons with Disabilities through fast and inclusive ID processing.
+        </p>
+      </div>
     </div>
-
-</header> 
+  </div>
+</header>
 
       
 <!-- ✅ Buttons Section with Custom PNG Icons -->
@@ -73,24 +93,27 @@
   <div class="max-w-7xl mx-auto">
     <!-- Flex container with no wrapping to keep buttons on one line -->
     <div class="flex justify-center gap-5 mb-6"> <!-- Adjusted gap for better spacing between buttons -->
+    <a href="<?php echo isset($_SESSION['user_id']) ? 'new_registration.php' : 'public/login_form.php'; ?>" class="...">
+
 
       <!-- New Registration -->
-      <a href="new_registration.php" class="bg-blue-800 text-white font-semibold px-8 py-6 rounded-lg shadow-md hover:bg-blue-800 transition w-56 sm:w-64 flex flex-col items-center">
-        <img src="../assets/pictures/newreg.png" alt="New Registration" class="w-16 h-16 mb-3" /> <!-- Adjusted icon size -->
-        <span class="text-lg font-semibold">New Registration</span> <!-- Adjusted text size -->
+      <a href="<?php echo isset($_SESSION['user_id']) ? 'new_registration.php' : 'login_form.php'; ?>" class="bg-blue-800 text-white font-semibold px-8 py-6 rounded-lg shadow-md hover:bg-blue-800 transition w-56 sm:w-64 flex flex-col items-center">
+        <img src="../assets/pictures/newreg.png" alt="New Registration" class="w-16 h-16 mb-3" />
+        <span class="text-lg font-semibold">New Registration</span>
       </a>
 
       <!-- Renew ID -->
-      <a href="renew_id.php" class="bg-blue-800 text-white font-semibold px-8 py-6 rounded-lg shadow-md hover:bg-blue-800 transition w-56 sm:w-64 flex flex-col items-center">
-        <img src="../assets/pictures/renewreg.png" alt="Renew ID" class="w-16 h-16 mb-3" /> <!-- Adjusted icon size -->
-        <span class="text-lg font-semibold">Renew ID</span> <!-- Adjusted text size -->
+      <a href="<?php echo isset($_SESSION['user_id']) ? 'renew_id.php' : 'login_form.php'; ?>" class="bg-blue-800 text-white font-semibold px-8 py-6 rounded-lg shadow-md hover:bg-blue-800 transition w-56 sm:w-64 flex flex-col items-center">
+        <img src="../assets/pictures/renewreg.png" alt="Renew ID" class="w-16 h-16 mb-3" />
+        <span class="text-lg font-semibold">Renew ID</span>
       </a>
 
       <!-- Lost ID -->
-      <a href="lost_id.php" class="bg-blue-800 text-white font-semibold px-8 py-6 rounded-lg shadow-md hover:bg-blue-800 transition w-56 sm:w-64 flex flex-col items-center">
-        <img src="../assets/pictures/lostid.png" alt="Lost ID" class="w-16 h-16 mb-3" /> <!-- Adjusted icon size -->
-        <span class="text-lg font-semibold">Lost ID</span> <!-- Adjusted text size -->
+      <a href="<?php echo isset($_SESSION['user_id']) ? 'lost_id.php' : 'login_form.php'; ?>" class="bg-blue-800 text-white font-semibold px-8 py-6 rounded-lg shadow-md hover:bg-blue-800 transition w-56 sm:w-64 flex flex-col items-center">
+        <img src="../assets/pictures/lostid.png" alt="Lost ID" class="w-16 h-16 mb-3" />
+        <span class="text-lg font-semibold">Lost ID</span>
       </a>
+
 
       <!-- Check Status -->
       <a href="check_status.php" class="bg-blue-800 text-white font-semibold px-8 py-6 rounded-lg shadow-md hover:bg-blue-800 transition w-56 sm:w-64 flex flex-col items-center">
