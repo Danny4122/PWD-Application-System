@@ -2,8 +2,6 @@
 session_start();
 ?>
 
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -92,36 +90,37 @@ session_start();
 <section class="bg-white py-7 px-5 text-center mt-20">
   <div class="max-w-7xl mx-auto">
     <!-- Flex container with no wrapping to keep buttons on one line -->
-    <div class="flex justify-center gap-5 mb-6"> <!-- Adjusted gap for better spacing between buttons -->
-    <a href="<?php echo isset($_SESSION['user_id']) ? 'new_registration.php' : 'public/login_form.php'; ?>" class="...">
-
+    <div class="flex justify-center gap-5 mb-6">
 
       <!-- New Registration -->
-      <a href="<?php echo isset($_SESSION['user_id']) ? 'new_registration.php' : 'login_form.php'; ?>" class="bg-blue-800 text-white font-semibold px-8 py-6 rounded-lg shadow-md hover:bg-blue-800 transition w-56 sm:w-64 flex flex-col items-center">
+      <a href="<?php echo isset($_SESSION['user_id']) ? '../src/client/form1.php' : '/public/login_form.php'; ?>"
+        class="bg-blue-800 text-white font-semibold px-8 py-6 rounded-lg shadow-md hover:bg-blue-800 transition w-56 sm:w-64 flex flex-col items-center">
         <img src="../assets/pictures/newreg.png" alt="New Registration" class="w-16 h-16 mb-3" />
         <span class="text-lg font-semibold">New Registration</span>
       </a>
 
       <!-- Renew ID -->
-      <a href="<?php echo isset($_SESSION['user_id']) ? 'renew_id.php' : 'login_form.php'; ?>" class="bg-blue-800 text-white font-semibold px-8 py-6 rounded-lg shadow-md hover:bg-blue-800 transition w-56 sm:w-64 flex flex-col items-center">
+      <a href="<?php echo isset($_SESSION['user_id']) ? '/src/client/form1.php' : '/public/login_form.php'; ?>"
+        class="bg-blue-800 text-white font-semibold px-8 py-6 rounded-lg shadow-md hover:bg-blue-800 transition w-56 sm:w-64 flex flex-col items-center">
         <img src="../assets/pictures/renewreg.png" alt="Renew ID" class="w-16 h-16 mb-3" />
         <span class="text-lg font-semibold">Renew ID</span>
       </a>
 
       <!-- Lost ID -->
-      <a href="<?php echo isset($_SESSION['user_id']) ? 'lost_id.php' : 'login_form.php'; ?>" class="bg-blue-800 text-white font-semibold px-8 py-6 rounded-lg shadow-md hover:bg-blue-800 transition w-56 sm:w-64 flex flex-col items-center">
+      <a href="<?php echo isset($_SESSION['user_id']) ? '/src/client/form1.php' : '/public/login_form.php'; ?>"
+        class="bg-blue-800 text-white font-semibold px-8 py-6 rounded-lg shadow-md hover:bg-blue-800 transition w-56 sm:w-64 flex flex-col items-center">
         <img src="../assets/pictures/lostid.png" alt="Lost ID" class="w-16 h-16 mb-3" />
         <span class="text-lg font-semibold">Lost ID</span>
       </a>
 
-
       <!-- Check Status -->
       <a href="check_status.php" class="bg-blue-800 text-white font-semibold px-8 py-6 rounded-lg shadow-md hover:bg-blue-800 transition w-56 sm:w-64 flex flex-col items-center">
-        <img src="../assets/pictures/checkstatus.png" alt="Check Status" class="w-16 h-16 mb-3" /> <!-- Adjusted icon size -->
-        <span class="text-lg font-semibold">Check Status</span> <!-- Adjusted text size -->
+        <img src="../assets/pictures/checkstatus.png" alt="Check Status" class="w-16 h-16 mb-3" />
+        <span class="text-lg font-semibold">Check Status</span>
       </a>
+
     </div>
- 
+
 <!-- Button Group: Requirements + Login/Signup -->
 <div class="flex flex-col items-center gap-4 mt-10">
   
@@ -172,11 +171,12 @@ session_start();
         <h4 class="text-blue-700 font-semibold text-lg mb-3">New Application</h4>
       </div>
       <p><img src="../assets/pictures/check.png" alt="Check" class="w-4 h-4 inline-block" /> Filled-out registration form</p>
-      <p><img src="../assets/pictures/check.png" alt="Check" class="w-4 h-4 inline-block" /> 1 pc 1x1 ID picture</p>
       <p><img src="../assets/pictures/check.png" alt="Check" class="w-4 h-4 inline-block" /> 1 whole body picture</p>
       <p><img src="../assets/pictures/check.png" alt="Check" class="w-4 h-4 inline-block" /> Barangay Certificate of Residency / Indigency</p>
       <p><img src="../assets/pictures/check.png" alt="Check" class="w-4 h-4 inline-block" /> Doctor's Referral / Medical Certificate</p>
       <p><img src="../assets/pictures/check.png" alt="Check" class="w-4 h-4 inline-block" /> Certificate from City Health Office</p>
+      <p><img src="../assets/pictures/check.png" alt="Check" class="w-4 h-4 inline-block" /> 1 pc 1x1 ID picture</p>
+
     </div>
 
     <!-- ID Renewal -->
@@ -190,7 +190,7 @@ session_start();
       <p><img src="../assets/pictures/check.png" alt="Check" class="w-4 h-4 inline-block" /> Barangay Certificate of Residency / Indigency</p>
       <p><img src="../assets/pictures/check.png" alt="Check" class="w-4 h-4 inline-block" /> Doctor's Referral / Medical Certificate</p>
       <p><img src="../assets/pictures/check.png" alt="Check" class="w-4 h-4 inline-block" /> Certificate from City Health Office</p>
-      <p><img src="../assets/pictures/check.png" alt="Check" class="w-4 h-4 inline-block" /> 1 pc 1x1 ID picture</p>
+      <p><img src="../assets/pictures/check.png" alt="Check" class="w-4 h-4 inline-block" /> 1pc 1x1 ID picture</p>
     </div>
 
     <!-- Lost ID -->
@@ -199,11 +199,12 @@ session_start();
         <img src="../assets/pictures/lostid_icon.png" alt="Lost" class="w-6 h-6" />
         <h4 class="text-blue-700 font-semibold text-lg mb-3">Lost ID</h4>
       </div>
+      <p><img src="../assets/pictures/check.png" alt="Check" class="w-4 h-4 inline-block" /> Filled-out registration form</p>
       <p><img src="../assets/pictures/check.png" alt="Check" class="w-4 h-4 inline-block" /> Affidavit of Loss</p>
       <p><img src="../assets/pictures/check.png" alt="Check" class="w-4 h-4 inline-block" /> Barangay Certificate of Residency / Indigency</p>
       <p><img src="../assets/pictures/check.png" alt="Check" class="w-4 h-4 inline-block" /> Doctor's Referral / Medical Certificate</p>
       <p><img src="../assets/pictures/check.png" alt="Check" class="w-4 h-4 inline-block" /> Certificate from City Health Office</p>
-      <p><img src="../assets/pictures/check.png" alt="Check" class="w-4 h-4 inline-block" /> 1 pc 1x1 ID picture</p>
+      <p><img src="../assets/pictures/check.png" alt="Check" class="w-4 h-4 inline-block" /> 1pc 1x1 ID picture</p>
     </div>
 
 <!-- Footer (No changes needed, but adjusted the padding) -->

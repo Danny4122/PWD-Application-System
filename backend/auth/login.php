@@ -17,7 +17,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
               $_SESSION['user_email'] = $user['email'];
               $_SESSION['first_name'] = $user['first_name']; // ✅ important
               $_SESSION['last_name'] = $user['last_name'];
-             $_SESSION['user_id'] = $user['id']; // optional if needed
+             $_SESSION['user_id'] = $user['user_id']; // optional if needed
 
 
 

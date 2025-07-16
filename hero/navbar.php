@@ -47,7 +47,7 @@
     </button>
     <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
       <ul class="navbar-nav">
-        <li class="nav-item"><a class="nav-link text-white" href="#">Home</a></li>
+        <li class="nav-item"><a class="nav-link text-white" href="/public/index.php">Home</a></li>
         <li class="nav-item"><a class="nav-link text-white" href="#">Contact</a></li>
       </ul>
     </div>
