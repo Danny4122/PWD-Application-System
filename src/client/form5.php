@@ -46,17 +46,20 @@
   <div class="container my-4">
     <div class="p-5 rounded-3 shadow bg-white" style="max-width: 720px; margin: 0 auto;">
       <h4 class="text-success fw-bold mb-3">Your application has been successfully submitted!</h4>
-      <p class="mb-3">
+      <p class="mb-1 fw-bold">
         Your application is now under initial review by the PDAO office.
       </p>
-      <p class="mb-2 fw-semibold">Next Step: CHO Verification</p>
-      <p class="mb-3">
+      <p class="mb-4">
+        Once your application is approved, you will proceed to the next step:
+      </p>
+      <p class="mb-2 fw-bold">Next Step: CHO Verification</p>
+      <p class="mb-4">
         To continue with the application process, please proceed to the
         <strong>City Health Office (CHO)</strong> for an in-person assessment of your disability.
       </p>
 
       <div class="mb-3">
-        <p class="mb-1 fw-semibold">Assessment Details:</p>
+        <p class="mb-1 fw-bold">Assessment Details:</p>
         <ul class="mb-2">
           <li><strong>When:</strong> Every Wednesday only</li>
           <li><strong>Contact Person:</strong> Dr. Taisha Rose Magadan Lisondra</li>
@@ -70,7 +73,7 @@
       </div>
 
       <div class="text-end">
-        <a href="index.html" class="btn btn-primary px-4">Go back to Homepage</a>
+        <a href="index.html" class="btn btn-primary px-3">Go back to Homepage</a>
       </div>
     </div>
   </div>
