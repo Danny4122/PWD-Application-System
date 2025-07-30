@@ -1,6 +1,13 @@
 <?php
 session_start();
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: /public/login_form.php");
+    exit;
+}
+
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -58,7 +65,6 @@ session_start();
   <img src="../assets/pictures/iligan_logo.png" alt="Iligan Logo" class="w-32 h-32 object-contain" />
 </div>
 
-
   <!-- Welcome Text and Action Buttons -->
   
 <?php if (isset($_SESSION['first_name'])): ?>
@@ -86,28 +92,28 @@ session_start();
 </header>
 
       
-<!-- ✅ Buttons Section with Custom PNG Icons -->
+<!-- Buttons Section -->
 <section class="bg-white py-7 px-5 text-center mt-20">
   <div class="max-w-7xl mx-auto">
     <!-- Flex container with no wrapping to keep buttons on one line -->
     <div class="flex justify-center gap-5 mb-6">
 
       <!-- New Registration -->
-      <a href="<?php echo isset($_SESSION['user_id']) ? '../src/client/form1.php' : '/public/login_form.php'; ?>"
+     <a href="<?php echo isset($_SESSION['user_id']) ? '../src/client/form1.php?type=new' : '/public/login_form.php'; ?>"
         class="bg-blue-800 text-white font-semibold px-8 py-6 rounded-lg shadow-md hover:bg-blue-800 transition w-56 sm:w-64 flex flex-col items-center">
         <img src="../assets/pictures/newreg.png" alt="New Registration" class="w-16 h-16 mb-3" />
         <span class="text-lg font-semibold">New Registration</span>
       </a>
 
-      <!-- Renew ID -->
-      <a href="<?php echo isset($_SESSION['user_id']) ? '/src/client/form1.php' : '/public/login_form.php'; ?>"
+     <!-- Renew ID -->
+      <a href="<?php echo isset($_SESSION['user_id']) ? '/src/client/form1.php?type=renew' : '/public/login_form.php'; ?>"
         class="bg-blue-800 text-white font-semibold px-8 py-6 rounded-lg shadow-md hover:bg-blue-800 transition w-56 sm:w-64 flex flex-col items-center">
         <img src="../assets/pictures/renewreg.png" alt="Renew ID" class="w-16 h-16 mb-3" />
         <span class="text-lg font-semibold">Renew ID</span>
       </a>
 
       <!-- Lost ID -->
-      <a href="<?php echo isset($_SESSION['user_id']) ? '/src/client/form1.php' : '/public/login_form.php'; ?>"
+      <a href="<?php echo isset($_SESSION['user_id']) ? '/src/client/form1.php?type=lost' : '/public/login_form.php'; ?>"
         class="bg-blue-800 text-white font-semibold px-8 py-6 rounded-lg shadow-md hover:bg-blue-800 transition w-56 sm:w-64 flex flex-col items-center">
         <img src="../assets/pictures/lostid.png" alt="Lost ID" class="w-16 h-16 mb-3" />
         <span class="text-lg font-semibold">Lost ID</span>
