@@ -182,8 +182,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
           value="<?= htmlspecialchars($draftData['date_applied'] ?? '') ?>">
       </div>
         <div class="col-md-2">
-          <div class="photo-box mx-auto">Upload Photo</div>
-        </div>
+            <div class="photo-box mx-auto text-center" 
+                style="cursor: pointer; overflow: hidden;" 
+                onclick="document.getElementById('photoInput').click();">
+              <span id="uploadText">Upload Photo</span>
+              <img id="previewImg" src="" alt="" style="display:none; width:100%; height:100%; object-fit: cover; border-radius:6px;">
+            </div>
+            <input type="file" id="photoInput" name="photo" accept="image/*" 
+                  style="display:none;" onchange="previewPhoto(event)">
+          </div>
       </div>
 
       <!-- Row 2 -->
@@ -383,6 +390,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         body: 'formData=' + encodeURIComponent(JSON.stringify(formData)) + '&step=1'
       });
     });
+    function previewPhoto(event) {
+    const file = event.target.files[0];
+    if (file) {
+      const uploadText = document.getElementById('uploadText');
+      const previewImg = document.getElementById('previewImg');
+
+      uploadText.style.display = "none";
+      previewImg.style.display = "block";
+      previewImg.src = URL.createObjectURL(file);
+    }
+  }
 </script>
 </body>
 </html>
