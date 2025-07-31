@@ -11,55 +11,68 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['applicant_id'])) {
 
 $applicant_id = $_SESSION['applicant_id'];
 
+// ✅ Determine application type
 $applicationType = strtolower($_GET['type'] ?? 'new');
 $_SESSION['application_type'] = $applicationType;
 
-// If no application_id yet, create a new application record
-if (!isset($_SESSION['application_id'])) {
-    $query = "INSERT INTO application (applicant_id, application_type, created_at)
-              VALUES ($1, $2, NOW()) RETURNING application_id";
-    $result = pg_query_params($conn, $query, [$applicant_id, $applicationType]);
-
-    if (!$result) {
-        die("Database Error: " . pg_last_error($conn));
-    }
-
-    if ($row = pg_fetch_assoc($result)) {
-        $_SESSION['application_id'] = $row['application_id'];
-    } else {
-        die("Error creating application.");
-    }
-}
-
-
-// ✅ If no application_id yet, create a new application record
-if (!isset($_SESSION['application_id'])) {
-    $query = "INSERT INTO application (applicant_id, application_type, created_at)
-              VALUES ($1, $2, NOW()) RETURNING application_id";
-    $result = pg_query_params($conn, $query, [$applicant_id, $applicationType]);
-
-    if (!$result) {
-        die("Database Error: " . pg_last_error($conn));
-    }
-
-    if ($row = pg_fetch_assoc($result)) {
-        $_SESSION['application_id'] = $row['application_id'];
-    } else {
-        die("Error creating application.");
-    }
-}
-
-$application_id = $_SESSION['application_id'];
-
-// ✅ Step 1 draft handling
-$step = 1;
-$draftData = loadDraftData($step, $application_id);
+$message = "";
+$photoPath = null;
 
 // ✅ If form is submitted
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
+
+    // ---- Handle photo upload ----
+    if (isset($_FILES['profile_photo']) && $_FILES['profile_photo']['error'] === 0) {
+        $uploadDir = '../../uploads/photos/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+        $fileName = time() . "_" . basename($_FILES['profile_photo']['name']);
+        $targetFile = $uploadDir . $fileName;
+
+        $fileType = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
+        $allowedTypes = ['jpg', 'jpeg', 'png', 'gif'];
+
+        if (in_array($fileType, $allowedTypes)) {
+            if (move_uploaded_file($_FILES['profile_photo']['tmp_name'], $targetFile)) {
+                $photoPath = $fileName;
+            } else {
+                $message = "Error uploading photo.";
+            }
+        } else {
+            $message = "Invalid file type. Only JPG, JPEG, PNG & GIF allowed.";
+        }
+    }
+
+    // ---- Create application if not exists ----
+    if (!isset($_SESSION['application_id'])) {
+        $query = "INSERT INTO application (applicant_id, application_type, date_applied, photo_path, created_at)
+                  VALUES ($1, $2, $3, $4, NOW()) RETURNING application_id";
+        $result = pg_query_params($conn, $query, [
+            $applicant_id,
+            $applicationType,
+            $_POST['date_applied'],
+            $photoPath
+        ]);
+
+        if (!$result) {
+            die("Database Error: " . pg_last_error($conn));
+        }
+
+        if ($row = pg_fetch_assoc($result)) {
+            $_SESSION['application_id'] = $row['application_id'];
+        } else {
+            die("Error creating application.");
+        }
+    }
+
+    $application_id = $_SESSION['application_id'];
+
+    // ✅ Step 1 draft handling
+    $step = 1;
     saveDraftData($step, $_POST, $application_id);
 
-    // Save structured session data
+    // ✅ Save session structured data
     $_SESSION['applicant'] = [
         'application_type' => $_POST['applicantType'],
         'last_name' => $_POST['last_name'],
@@ -91,10 +104,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         'disability_type' => $_POST['disability_type']
     ];
 
-    // Redirect to Form 2
+    // ✅ Redirect to Form 2
     header("Location: form2.php");
     exit;
 }
+
+// ✅ If coming back, load draft data
+$step = 1;
+$application_id = $_SESSION['application_id'] ?? null;
+$draftData = $application_id ? loadDraftData($step, $application_id) : [];
 ?>
 
 
@@ -150,7 +168,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $_SESSION['application_type'] = $applicationType;
 
 
-    // Label map
     $applicationLabel = match($applicationType) {
       'new' => 'New Application',
       'renew' => 'Renewal Application',
@@ -380,7 +397,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 </html>
 <script>
-
     const form = document.querySelector('form');
     form.addEventListener('input', () => {
       const formData = Object.fromEntries(new FormData(form));

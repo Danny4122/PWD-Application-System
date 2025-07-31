@@ -1,32 +1,40 @@
 <?php
 session_start();
-require_once '../../config/db.php'; // adjust path as needed
+require_once '../../config/db.php';
+require_once '../../includes/DraftHelper.php';
 
-file_put_contents('autosave_log.txt', date('c') . ' ' . json_encode($_POST) . PHP_EOL, FILE_APPEND);
+header('Content-Type: application/json');
 
-echo realpath('autosave_log.txt');
-
-    
-if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['formData'])) {
-            $formData = json_decode($_POST['formData'] ?? '', true);
-        if (!is_array($formData)) {
-            http_response_code(400);
-            exit('Invalid JSON data');
-        }
-
-
-        $sessionId = session_id();
-        $step = isset($_POST['step']) ? (int)$_POST['step'] : 1;
-        $data = json_encode($formData);
-
-
-
-    $query = "INSERT INTO application_draft (session_id, step, data, updated_at)
-              VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
-              ON CONFLICT (session_id, step) DO UPDATE
-              SET data = EXCLUDED.data, updated_at = CURRENT_TIMESTAMP";
-
-    pg_query_params($conn, $query, [$sessionId, $step, $data]);
+// ✅ Ensure we have an active application
+if (!isset($_SESSION['application_id'])) {
+    http_response_code(400);
+    echo json_encode(["status" => "error", "message" => "No active application."]);
+    exit;
 }
 
-?>
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['formData'])) {
+    $application_id = $_SESSION['application_id'];
+    $step = isset($_POST['step']) ? (int)$_POST['step'] : 1;
+
+    // Decode the posted JSON form data
+    $formData = json_decode($_POST['formData'], true);
+
+    if (!is_array($formData)) {
+        http_response_code(400);
+        echo json_encode(["status" => "error", "message" => "Invalid JSON data"]);
+        exit;
+    }
+
+    // Save using DraftHelper
+    $success = saveDraftData($step, $formData, $application_id);
+
+    if ($success) {
+        echo json_encode(["status" => "success", "message" => "Draft saved"]);
+    } else {
+        http_response_code(500);
+        echo json_encode(["status" => "error", "message" => "Failed to save draft", "error" => pg_last_error($conn)]);
+    }
+} else {
+    http_response_code(405);
+    echo json_encode(["status" => "error", "message" => "Invalid request"]);
+}
