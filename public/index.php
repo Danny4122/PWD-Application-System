@@ -220,20 +220,23 @@ if (!isset($_SESSION['user_id'])) {
 </footer>
 
   <!-- ✅ JavaScript to detect when the Empowering Section is in view -->
-  <script>
-    const empoweringSection = document.querySelector('.empowering-section');
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const empoweringSection = document.querySelector('.empowering-section');
+        if (!empoweringSection) return; // no target, nothing to observe (prevents error)
 
-    const observer = new IntersectionObserver((entries, observer) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          empoweringSection.classList.add('visible');
-          observer.disconnect(); // Stop observing after it's visible
-        }
+        const observer = new IntersectionObserver((entries, obs) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              empoweringSection.classList.add('visible');
+              obs.disconnect();
+            }
+          });
+        }, { threshold: 0.5 });
+
+        observer.observe(empoweringSection);
       });
-    }, { threshold: 0.5 }); // Adjust threshold to control when it should appear
-
-    observer.observe(empoweringSection);
-  </script>
+    </script>
 
 </body>
 </html>

@@ -4,110 +4,175 @@ require_once '../../config/db.php';
 require_once '../../includes/DraftHelper.php'; // helper functions for draft
 
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['applicant_id'])) {
-    // Redirect if not logged in
     header("Location: ../../public/login_form.php");
     exit;
 }
 
-$applicant_id = $_SESSION['applicant_id'];
+$applicant_id = (int)$_SESSION['applicant_id'];
 
-// ✅ Determine application type
-$applicationType = strtolower($_GET['type'] ?? 'new');
+// ✅ Determine application type from URL and map to enum
+$applicationType = strtolower($_GET['type'] ?? 'new'); // 'new'|'renew'|'lost'
 $_SESSION['application_type'] = $applicationType;
 
-$message = "";
-$photoPath = null;
+$appTypeEnum = match ($applicationType) {
+    'new'   => 'New',
+    'renew' => 'Renewal',
+    'lost'  => 'Lost ID',
+    default => 'New'
+};
 
-// ✅ If form is submitted
+// ✅ Ensure we have an application_id as soon as the page loads (GET or POST)
+if (empty($_SESSION['application_id'])) {
+    $result = pg_query_params(
+        $conn,
+        "SELECT application_id
+           FROM application
+          WHERE applicant_id = $1
+            AND application_type = $2::application_type_enum
+            AND application_date IS NULL
+          ORDER BY created_at DESC
+          LIMIT 1",
+        [$applicant_id, $appTypeEnum]
+    );
+
+    if ($result && ($row = pg_fetch_assoc($result))) {
+        $_SESSION['application_id'] = (int)$row['application_id'];
+    } else {
+        $ins = pg_query_params(
+            $conn,
+            "INSERT INTO application (applicant_id, application_type, application_date, created_at)
+             VALUES ($1, $2::application_type_enum, NULL, NOW())
+             RETURNING application_id",
+            [$applicant_id, $appTypeEnum]
+        );
+        if (!$ins) {
+            die('DB Error creating application: ' . pg_last_error($conn));
+        }
+        $_SESSION['application_id'] = (int)pg_fetch_result($ins, 0, 'application_id');
+    }
+}
+$application_id = (int)$_SESSION['application_id'];
+
+// ✅ Load draft data for Step 1 (so you can safely read $draftData below)
+$draftData = loadDraftData(1, $application_id) ?? [];
+
+// ✅ If draft lacks pic_1x1_path, pull it from the application row
+if (empty($draftData['pic_1x1_path'])) {
+    $res = pg_query_params(
+        $conn,
+        "SELECT pic_1x1_path FROM application WHERE application_id = $1",
+        [$application_id]
+    );
+    if ($res && ($r = pg_fetch_assoc($res)) && !empty($r['pic_1x1_path'])) {
+        $draftData['pic_1x1_path'] = $r['pic_1x1_path'];
+    }
+}
+
+$currentPic = $draftData['pic_1x1_path'] ?? null;
+
+
+/**
+ * ✅ Handle POST save for Form 1
+ * - Upload optional profile photo & 1x1 pic
+ * - Save draft (step=1) including pic path
+ * - Redirect to Form 2
+ */
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $step     = 1;
+    $formData = $_POST;
 
-    // ---- Handle photo upload ----
-    if (isset($_FILES['profile_photo']) && $_FILES['profile_photo']['error'] === 0) {
-        $uploadDir = '../../uploads/photos/';
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0777, true);
-        }
-        $fileName = time() . "_" . basename($_FILES['profile_photo']['name']);
-        $targetFile = $uploadDir . $fileName;
+    // ---- Profile photo (optional) -> keep in draft only ----
+    if (isset($_FILES['profile_photo']) && $_FILES['profile_photo']['error'] === UPLOAD_ERR_OK) {
+        $photosFsDir  = realpath(__DIR__ . '/../../') . '/uploads/photos/';
+        $photosWebDir = '/uploads/photos/'; // must map to same folder via web server
+        if (!is_dir($photosFsDir)) { mkdir($photosFsDir, 0777, true); }
 
-        $fileType = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
-        $allowedTypes = ['jpg', 'jpeg', 'png', 'gif'];
+        $ext = strtolower(pathinfo($_FILES['profile_photo']['name'], PATHINFO_EXTENSION));
+        $allowed = ['jpg','jpeg','png','gif','webp'];
+        if (in_array($ext, $allowed, true)) {
+            $file = time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+            $fs   = $photosFsDir . $file;
+            $web  = $photosWebDir . $file;
 
-        if (in_array($fileType, $allowedTypes)) {
-            if (move_uploaded_file($_FILES['profile_photo']['tmp_name'], $targetFile)) {
-                $photoPath = $fileName;
-            } else {
-                $message = "Error uploading photo.";
+            if (move_uploaded_file($_FILES['profile_photo']['tmp_name'], $fs)) {
+                $formData['profile_photo_path'] = $web;
             }
-        } else {
-            $message = "Invalid file type. Only JPG, JPEG, PNG & GIF allowed.";
         }
     }
 
-    // ---- Create application if not exists ----
-    if (!isset($_SESSION['application_id'])) {
-        $query = "INSERT INTO application (applicant_id, application_type, date_applied, photo_path, created_at)
-                  VALUES ($1, $2, $3, $4, NOW()) RETURNING application_id";
-        $result = pg_query_params($conn, $query, [
-            $applicant_id,
-            $applicationType,
-            $_POST['date_applied'],
-            $photoPath
-        ]);
+    // ---- 1x1 photo (optional) -> save to application + put in draft for preview ----
+    if (isset($_FILES['pic_1x1']) && $_FILES['pic_1x1']['error'] === UPLOAD_ERR_OK) {
+        $fsDir  = realpath(__DIR__ . '/../../') . '/uploads/';
+        $webDir = '/uploads/'; // adjust if your uploads URL differs
+        if (!is_dir($fsDir)) { mkdir($fsDir, 0777, true); }
 
-        if (!$result) {
-            die("Database Error: " . pg_last_error($conn));
-        }
+        $ext = strtolower(pathinfo($_FILES['pic_1x1']['name'], PATHINFO_EXTENSION));
+        $allowed = ['jpg','jpeg','png','gif','webp'];
+        if (in_array($ext, $allowed, true)) {
+            $file = time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+            $fs   = $fsDir . $file;
+            $web  = $webDir . $file;
 
-        if ($row = pg_fetch_assoc($result)) {
-            $_SESSION['application_id'] = $row['application_id'];
-        } else {
-            die("Error creating application.");
+            if (move_uploaded_file($_FILES['pic_1x1']['tmp_name'], $fs)) {
+                // 1) persist on application row
+                pg_query_params(
+                    $conn,
+                    "UPDATE application
+                        SET pic_1x1_path = $1, updated_at = NOW()
+                      WHERE application_id = $2",
+                    [$web, $application_id]
+                );
+                // 2) also include in draft so it preloads on refresh
+                $formData['pic_1x1_path'] = $web;
+            }
         }
     }
 
-    $application_id = $_SESSION['application_id'];
+    if (empty($formData['pic_1x1_path']) && !empty($draftData['pic_1x1_path'])) {
+    $formData['pic_1x1_path'] = $draftData['pic_1x1_path'];
+}
 
-    // ✅ Step 1 draft handling
-    $step = 1;
-    saveDraftData($step, $_POST, $application_id);
+    // ✅ Save whole Step 1 payload (now includes any photo paths)
+    saveDraftData($step, $formData, $application_id);
 
-    // ✅ Save session structured data
     $_SESSION['applicant'] = [
-        'application_type' => $_POST['applicantType'],
-        'last_name' => $_POST['last_name'],
-        'first_name' => $_POST['first_name'],
-        'middle_name' => $_POST['middle_name'],
-        'suffix' => $_POST['suffix'],
-        'birthdate' => $_POST['birthdate'],
-        'sex' => $_POST['sex'],
-        'civil_status' => $_POST['civil_status'],
-        'house_no_street' => $_POST['house_no_street'],
-        'barangay' => $_POST['barangay'],
-        'municipality' => $_POST['municipality'],
-        'province' => $_POST['province'],
-        'region' => $_POST['region'],
-        'landline_no' => $_POST['landline_no'],
-        'mobile_no' => $_POST['mobile_no'],
-        'email_address' => $_POST['email_address']
+        'application_type' => $_POST['applicantType'] ?? $applicationType,
+        'last_name'        => $_POST['last_name']      ?? null,
+        'first_name'       => $_POST['first_name']     ?? null,
+        'middle_name'      => $_POST['middle_name']    ?? null,
+        'suffix'           => $_POST['suffix']         ?? null,
+        'birthdate'        => $_POST['birthdate']      ?? null,
+        'sex'              => $_POST['sex']            ?? null,
+        'civil_status'     => $_POST['civil_status']   ?? null,
+        'house_no_street'  => $_POST['house_no_street']?? null,
+        'barangay'         => $_POST['barangay']       ?? null,
+        'municipality'     => $_POST['municipality']   ?? null,
+        'province'         => $_POST['province']       ?? null,
+        'region'           => $_POST['region']         ?? null,
+        'landline_no'      => $_POST['landline_no']    ?? null,
+        'mobile_no'        => $_POST['mobile_no']      ?? null,
+        'email_address'    => $_POST['email_address']  ?? null,
+        'pic_1x1_path'     => $formData['pic_1x1_path'] ?? null // store photo path in session
     ];
 
     $_SESSION['causedetail'] = [
-        'cause_detail' => $_POST['cause']
+        'cause_detail' => $_POST['cause'] ?? null
     ];
-
     $_SESSION['causedisability'] = [
-        'cause_disability' => $_POST['cause_description']
+        'cause_disability' => $_POST['cause_description'] ?? null
     ];
-
     $_SESSION['disability'] = [
-        'disability_type' => $_POST['disability_type']
+        'disability_type' => $_POST['disability_type'] ?? null
     ];
 
-    // ✅ Redirect to Form 2
-    header("Location: form2.php");
+    // Keep photo in session for later forms if needed
+    $_SESSION['draft_photo'] = $pic1x1Path ?: $photoPath;
+
+    // ✅ Redirect to Form 2 (carry type if your routes read it)
+    header("Location: form2.php?type=" . urlencode($applicationType));
     exit;
 }
+
 
 // ✅ If coming back, load draft data
 $step = 1;
@@ -160,7 +225,7 @@ $draftData = $application_id ? loadDraftData($step, $application_id) : [];
   </div>
 
 <main class="form-container">
-  <form method="post" id="form1">
+   <form id="appForm" method="POST" action="form1.php" enctype="multipart/form-data">
     <!-- Row 1 -->
     <div class="row g-3 mb-3">
       <?php
@@ -183,31 +248,51 @@ $draftData = $application_id ? loadDraftData($step, $application_id) : [];
     </div>
   </div>
 
-        <div class="col-md-4">
-          <label for="pwdNumber" class="form-label fw-semibold">Persons with Disability Number</label>
-          <input type="text" id="pwdNumber" class="form-control" placeholder="To be filled by PDAO once approved" disabled>
-        </div>
-
-        <div class="col-md-3">
-        <label for="dateApplied" class="form-label fw-semibold">Date Applied</label>
-        <input 
-          type="date" 
-          id="dateApplied" 
-          name="date_applied" 
-          class="form-control" 
-          required 
-          value="<?= htmlspecialchars($draftData['date_applied'] ?? '') ?>">
-      </div>
-        <div class="col-md-2">
-            <div class="photo-box mx-auto text-center" 
-                style="cursor: pointer; overflow: hidden;" 
-                onclick="document.getElementById('photoInput').click();">
-              <span id="uploadText">Upload Photo</span>
-              <img id="previewImg" src="" alt="" style="display:none; width:100%; height:100%; object-fit: cover; border-radius:6px;">
+            <div class="col-md-4">
+              <label for="pwdNumber" class="form-label fw-semibold">Persons with Disability Number</label>
+              <input type="text" id="pwdNumber" class="form-control" placeholder="To be filled by PDAO once approved" disabled>
             </div>
-            <input type="file" id="photoInput" name="photo" accept="image/*" 
-                  style="display:none;" onchange="previewPhoto(event)">
+
+            <div class="col-md-3">
+            <label for="application_date" class="form-label fw-semibold">Date Applied</label>
+            <input 
+              type="date" 
+              id="application_date" 
+              name="application_date" 
+              class="form-control" 
+              required 
+              value="<?= htmlspecialchars($draftData['application_date'] ?? '') ?>">
           </div>
+          <div class="col-md-2">
+      <div class="photo-box mx-auto text-center" 
+          style="cursor: pointer; overflow: hidden;" 
+          onclick="document.getElementById('photoInput').click();">
+          
+        <span id="uploadText" <?= !empty($currentPic) ? 'style="display:none;"' : '' ?>>
+          Upload Photo
+        </span>
+
+        <img id="previewImg" 
+            src="<?= htmlspecialchars($currentPic ?? '') ?>" 
+            alt="" 
+            style="<?= !empty($currentPic) ? '' : 'display:none;' ?>; 
+                    width:100%; height:100%; object-fit:cover; border-radius:6px;">
+      </div>
+
+        <!-- Keep the saved path in a hidden field so autosave includes it -->
+        <input type="hidden" name="pic_1x1_path" id="pic_1x1_path"
+         value="<?= htmlspecialchars($currentPic ?? '') ?>">
+
+        <!-- Only ONE file input -->
+        <input type="file" 
+              id="photoInput" 
+              name="pic_1x1" 
+              accept="image/*" 
+              style="display:none;" 
+              onchange="previewPhoto(event)">
+      </div>
+
+
       </div>
 
       <!-- Row 2 -->
@@ -352,71 +437,114 @@ $draftData = $application_id ? loadDraftData($step, $application_id) : [];
     </form>
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
- <script>
-  const causeSelect = document.getElementById('cause_description');
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const causeSelect = document.getElementById('cause_description');
 
-  function updateOptions(type) {
-    let options = [];
+    function updateOptions(type) {
+      let options = [];
 
-      if (type === "Congenital/Inborn"){
-      options = ["Autism", "ADHD", "Cerebral Palsy", "Down Syndrome"];
-    } else if (type === "Acquired") {
-      options = ["Chronic Illness", "Cerebral Palsy", "Injury"];
-    }
-
-    causeSelect.innerHTML = '<option value="">Please Select</option>';
-    options.forEach(opt => {
-      const optionElement = document.createElement('option');
-      optionElement.textContent = opt;
-      optionElement.value = opt;
-      causeSelect.appendChild(optionElement);
-    });
-  }
-
-  window.addEventListener('DOMContentLoaded', () => {
-    const savedCause = "<?= $draftData['cause'] ?? '' ?>";
-    const savedDesc = "<?= $draftData['cause_description'] ?? '' ?>";
-
-    if (savedCause) {
-      const radio = document.querySelector(`input[name="cause"][value="${savedCause}"]`);
-      if (radio) {
-        radio.checked = true;
-        updateOptions(savedCause); // This repopulates dropdown
+        if (type === "Congenital/Inborn"){
+        options = ["Autism", "ADHD", "Cerebral Palsy", "Down Syndrome"];
+      } else if (type === "Acquired") {
+        options = ["Chronic Illness", "Cerebral Palsy", "Injury"];
       }
-    
-      if (savedDesc) {
-        setTimeout(() => {
-          causeSelect.value = savedDesc;
-        }, 100);
-      }
-    }
-  });
-</script>
-</body>
 
-</html>
-<script>
-    const form = document.querySelector('form');
-    form.addEventListener('input', () => {
-      const formData = Object.fromEntries(new FormData(form));
-      fetch('autosave.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'formData=' + encodeURIComponent(JSON.stringify(formData)) + '&step=1'
+      causeSelect.innerHTML = '<option value="">Please Select</option>';
+      options.forEach(opt => {
+        const optionElement = document.createElement('option');
+        optionElement.textContent = opt;
+        optionElement.value = opt;
+        causeSelect.appendChild(optionElement);
       });
-    });
-    function previewPhoto(event) {
-    const file = event.target.files[0];
-    if (file) {
-      const uploadText = document.getElementById('uploadText');
-      const previewImg = document.getElementById('previewImg');
-
-      uploadText.style.display = "none";
-      previewImg.style.display = "block";
-      previewImg.src = URL.createObjectURL(file);
     }
-  }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedCause = "<?= $draftData['cause'] ?? '' ?>";
+      const savedDesc = "<?= $draftData['cause_description'] ?? '' ?>";
+
+      if (savedCause) {
+        const radio = document.querySelector(`input[name="cause"][value="${savedCause}"]`);
+        if (radio) {
+          radio.checked = true;
+          updateOptions(savedCause); // This repopulates dropdown
+        }
+      
+        if (savedDesc) {
+          setTimeout(() => {
+            causeSelect.value = savedDesc;
+          }, 100);
+        }
+      }
+    });
+  </script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('Autosave script loaded');
+
+      const form = document.getElementById('appForm'); // make sure <form> has id="appForm"
+      if (!form) {
+        console.error('Autosave: form not found');
+        return;
+      }
+
+      // PHP variables so JS knows them
+      const APPLICATION_ID = <?= json_encode($_SESSION['application_id'] ?? null) ?>;
+      const STEP = 1; // this page is Form 1
+
+      const debounce = (fn, ms = 400) => {
+        let t;
+        return (...args) => {
+          clearTimeout(t);
+          t = setTimeout(() => fn(...args), ms);
+        };
+      };
+
+      const send = () => {
+        const obj = Object.fromEntries(new FormData(form).entries());
+        obj.application_id = APPLICATION_ID; // Send ID to autosave.php
+
+        fetch('./autosave.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body:
+            'formData=' + encodeURIComponent(JSON.stringify(obj)) +
+            '&step=' + STEP +
+            '&application_id=' + encodeURIComponent(APPLICATION_ID)
+        })
+        .then(r => r.json())
+        .then(d => console.log('Autosave response:', d))
+        .catch(e => console.error('Autosave failed:', e));
+      };
+
+      form.addEventListener('input', debounce(send));
+      form.addEventListener('change', debounce(send));
+    });
+    </script>
+
+    <script>
+  // Make it GLOBAL so inline onchange can find it
+  window.previewPhoto = function (event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    const ok = ['image/jpeg','image/png','image/gif','image/webp','image/jpg'];
+    if (!ok.includes(file.type)) {
+      alert('Please select an image (JPG/PNG/GIF/WebP).');
+      event.target.value = '';
+      return;
+    }
+
+    const img = document.getElementById('previewImg');
+    const txt = document.getElementById('uploadText');
+    if (img) { img.src = URL.createObjectURL(file); img.style.display = 'block'; }
+    if (txt) { txt.style.display = 'none'; }
+  };
 </script>
+
+
+
+
 </body>
 </html>

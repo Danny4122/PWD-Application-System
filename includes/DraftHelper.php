@@ -25,11 +25,13 @@ function saveDraftData($step, $formData, $application_id) {
     $json_data = json_encode($formData);
 
     $query = "
-        INSERT INTO application_draft (application_id, step, data, updated_at)
-        VALUES ($1, $2, $3, NOW())
-        ON CONFLICT (application_id, step)
-        DO UPDATE SET data = EXCLUDED.data, updated_at = NOW()
-    ";
+    INSERT INTO application_draft (application_id, step, data, updated_at)
+    VALUES ($1, $2, $3::jsonb, NOW())
+    ON CONFLICT (application_id, step)
+    DO UPDATE SET
+    data = application_draft.data || EXCLUDED.data,
+    updated_at = NOW()
+";
 
     $result = pg_query_params($conn, $query, [$application_id, $step, $json_data]);
 
