@@ -1,7 +1,7 @@
 <?php
 session_start();
 require_once '../../config/db.php';
-require_once '../../includes/DraftHelper.php'; // helper functions for draft
+require_once '../../includes/DraftHelper.php';
 
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['applicant_id'])) {
     header("Location: ../../public/login_form.php");
@@ -10,34 +10,61 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['applicant_id'])) {
 
 $applicant_id = (int)$_SESSION['applicant_id'];
 
-// ✅ Determine application type from URL and map to enum
-$applicationType = strtolower($_GET['type'] ?? 'new'); // 'new'|'renew'|'lost'
-$_SESSION['application_type'] = $applicationType;
+/** -------------------------------
+ * Resolve application type (url -> post -> session)
+ * and normalize to: new | renew | lost
+ * ------------------------------- */
+$type = strtolower($_GET['type'] ?? $_POST['type'] ?? ($_SESSION['application_type'] ?? 'new'));
+if ($type === 'renewal') $type = 'renew';
+if (!in_array($type, ['new','renew','lost'], true)) $type = 'new';
+$_SESSION['application_type'] = $type;
 
-$appTypeEnum = match ($applicationType) {
-    'new'   => 'New',
-    'renew' => 'Renewal',
-    'lost'  => 'Lost ID',
-    default => 'New'
+/** Map to DB enum */
+$appTypeEnum = match ($type) {
+  'new'   => 'New',
+  'renew' => 'Renewal',
+  'lost'  => 'Lost ID',
 };
 
-// ✅ Ensure we have an application_id as soon as the page loads (GET or POST)
-if (empty($_SESSION['application_id'])) {
-    $result = pg_query_params(
+/** -------------------------------
+ * Ensure we have an in-progress application_id
+ * for this applicant + type (application_date IS NULL)
+ * ------------------------------- */
+
+// If a session id exists, validate it's still correct/in-progress
+if (!empty($_SESSION['application_id'])) {
+    $chk = pg_query_params(
         $conn,
         "SELECT application_id
            FROM application
-          WHERE applicant_id = $1
+          WHERE application_id   = $1
+            AND applicant_id     = $2
+            AND application_type = $3::application_type_enum
+            AND application_date IS NULL",
+        [$_SESSION['application_id'], $applicant_id, $appTypeEnum]
+    );
+    if (!$chk || !pg_fetch_row($chk)) {
+        unset($_SESSION['application_id']);
+    }
+}
+
+if (empty($_SESSION['application_id'])) {
+    // Reuse latest in-progress app for this type
+    $res = pg_query_params(
+        $conn,
+        "SELECT application_id
+           FROM application
+          WHERE applicant_id     = $1
             AND application_type = $2::application_type_enum
             AND application_date IS NULL
           ORDER BY created_at DESC
           LIMIT 1",
         [$applicant_id, $appTypeEnum]
     );
-
-    if ($result && ($row = pg_fetch_assoc($result))) {
+    if ($res && ($row = pg_fetch_assoc($res))) {
         $_SESSION['application_id'] = (int)$row['application_id'];
     } else {
+        // Create new in-progress app
         $ins = pg_query_params(
             $conn,
             "INSERT INTO application (applicant_id, application_type, application_date, created_at)
@@ -45,76 +72,68 @@ if (empty($_SESSION['application_id'])) {
              RETURNING application_id",
             [$applicant_id, $appTypeEnum]
         );
-        if (!$ins) {
-            die('DB Error creating application: ' . pg_last_error($conn));
-        }
+        if (!$ins) die('DB Error creating application: ' . pg_last_error($conn));
         $_SESSION['application_id'] = (int)pg_fetch_result($ins, 0, 'application_id');
     }
 }
+
 $application_id = (int)$_SESSION['application_id'];
 
-// ✅ Load draft data for Step 1 (so you can safely read $draftData below)
-$draftData = loadDraftData(1, $application_id) ?? [];
+/** -------------------------------
+ * Load Step 1 draft (for preload)
+ * ------------------------------- */
+$step = 1;
+$draftData = loadDraftData($step, $application_id) ?? [];
 
-// ✅ If draft lacks pic_1x1_path, pull it from the application row
+/** If draft lacks pic_1x1_path, read from application row */
 if (empty($draftData['pic_1x1_path'])) {
-    $res = pg_query_params(
-        $conn,
-        "SELECT pic_1x1_path FROM application WHERE application_id = $1",
-        [$application_id]
-    );
+    $res = pg_query_params($conn, "SELECT pic_1x1_path FROM application WHERE application_id = $1", [$application_id]);
     if ($res && ($r = pg_fetch_assoc($res)) && !empty($r['pic_1x1_path'])) {
         $draftData['pic_1x1_path'] = $r['pic_1x1_path'];
     }
 }
-
 $currentPic = $draftData['pic_1x1_path'] ?? null;
 
+/** -------------------------------
+ * Handle POST (save step 1)
+ * ------------------------------- */
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $formData   = $_POST;
+    $photoPath  = null; // optional profile_photo (draft only)
+    $pic1x1Path = null; // main 1x1 photo (persist on application)
 
-/**
- * ✅ Handle POST save for Form 1
- * - Upload optional profile photo & 1x1 pic
- * - Save draft (step=1) including pic path
- * - Redirect to Form 2
- */
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $step     = 1;
-    $formData = $_POST;
-
-    // ---- Profile photo (optional) -> keep in draft only ----
+    // ---- Profile photo (optional) -> keep only in draft ----
     if (isset($_FILES['profile_photo']) && $_FILES['profile_photo']['error'] === UPLOAD_ERR_OK) {
         $photosFsDir  = realpath(__DIR__ . '/../../') . '/uploads/photos/';
-        $photosWebDir = '/uploads/photos/'; // must map to same folder via web server
+        $photosWebDir = '/uploads/photos/';
         if (!is_dir($photosFsDir)) { mkdir($photosFsDir, 0777, true); }
 
         $ext = strtolower(pathinfo($_FILES['profile_photo']['name'], PATHINFO_EXTENSION));
-        $allowed = ['jpg','jpeg','png','gif','webp'];
-        if (in_array($ext, $allowed, true)) {
+        if (in_array($ext, ['jpg','jpeg','png','gif','webp'], true)) {
             $file = time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
             $fs   = $photosFsDir . $file;
             $web  = $photosWebDir . $file;
-
             if (move_uploaded_file($_FILES['profile_photo']['tmp_name'], $fs)) {
+                $photoPath = $web;
                 $formData['profile_photo_path'] = $web;
             }
         }
     }
 
-    // ---- 1x1 photo (optional) -> save to application + put in draft for preview ----
+    // ---- 1x1 photo (optional) -> save to application + draft ----
     if (isset($_FILES['pic_1x1']) && $_FILES['pic_1x1']['error'] === UPLOAD_ERR_OK) {
         $fsDir  = realpath(__DIR__ . '/../../') . '/uploads/';
-        $webDir = '/uploads/'; // adjust if your uploads URL differs
+        $webDir = '/uploads/';
         if (!is_dir($fsDir)) { mkdir($fsDir, 0777, true); }
 
         $ext = strtolower(pathinfo($_FILES['pic_1x1']['name'], PATHINFO_EXTENSION));
-        $allowed = ['jpg','jpeg','png','gif','webp'];
-        if (in_array($ext, $allowed, true)) {
+        if (in_array($ext, ['jpg','jpeg','png','gif','webp'], true)) {
             $file = time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
             $fs   = $fsDir . $file;
             $web  = $webDir . $file;
-
             if (move_uploaded_file($_FILES['pic_1x1']['tmp_name'], $fs)) {
-                // 1) persist on application row
+                $pic1x1Path = $web;
+                // persist on application row
                 pg_query_params(
                     $conn,
                     "UPDATE application
@@ -122,21 +141,23 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                       WHERE application_id = $2",
                     [$web, $application_id]
                 );
-                // 2) also include in draft so it preloads on refresh
+                // also in draft for preload
                 $formData['pic_1x1_path'] = $web;
             }
         }
     }
 
+    // If no new upload, keep whatever was already in draft
     if (empty($formData['pic_1x1_path']) && !empty($draftData['pic_1x1_path'])) {
-    $formData['pic_1x1_path'] = $draftData['pic_1x1_path'];
-}
+        $formData['pic_1x1_path'] = $draftData['pic_1x1_path'];
+    }
 
-    // ✅ Save whole Step 1 payload (now includes any photo paths)
+    // Save entire step-1 payload (JSONB merge in DraftHelper)
     saveDraftData($step, $formData, $application_id);
 
+    // (Optional) stash some fields in session for later steps
     $_SESSION['applicant'] = [
-        'application_type' => $_POST['applicantType'] ?? $applicationType,
+        'application_type' => $type,
         'last_name'        => $_POST['last_name']      ?? null,
         'first_name'       => $_POST['first_name']     ?? null,
         'middle_name'      => $_POST['middle_name']    ?? null,
@@ -152,26 +173,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         'landline_no'      => $_POST['landline_no']    ?? null,
         'mobile_no'        => $_POST['mobile_no']      ?? null,
         'email_address'    => $_POST['email_address']  ?? null,
-        'pic_1x1_path'     => $formData['pic_1x1_path'] ?? null // store photo path in session
+        'pic_1x1_path'     => $formData['pic_1x1_path'] ?? null,
     ];
 
-    $_SESSION['causedetail'] = [
-        'cause_detail' => $_POST['cause'] ?? null
-    ];
-    $_SESSION['causedisability'] = [
-        'cause_disability' => $_POST['cause_description'] ?? null
-    ];
-    $_SESSION['disability'] = [
-        'disability_type' => $_POST['disability_type'] ?? null
-    ];
+    $_SESSION['causedetail'] = [ 'cause_detail' => $_POST['cause'] ?? null ];
+    $_SESSION['causedisability'] = [ 'cause_disability' => $_POST['cause_description'] ?? null ];
+    $_SESSION['disability'] = [ 'disability_type' => $_POST['disability_type'] ?? null ];
 
-    // Keep photo in session for later forms if needed
+    // useful if you reference later
     $_SESSION['draft_photo'] = $pic1x1Path ?: $photoPath;
 
-    // ✅ Redirect to Form 2 (carry type if your routes read it)
-    header("Location: form2.php?type=" . urlencode($applicationType));
+    // Go to step 2, keep ?type
+    header("Location: form2.php?type=" . urlencode($type));
     exit;
 }
+
 
 
 // ✅ If coming back, load draft data
@@ -385,15 +401,15 @@ $draftData = $application_id ? loadDraftData($step, $application_id) : [];
 
         <div class="col-md-3">
           <label for="houseNo" class="form-label fw-semibold">House No. and Street</label>
-          <input type="text" name="house_no_street" id="house_no_street" id="house_no_street" class="form-control" value="<?= htmlspecialchars($draftData['house_no_street'] ?? '') ?>">
+          <input type="text" name="house_no_street" id="house_no_street"  class="form-control" value="<?= htmlspecialchars($draftData['house_no_street'] ?? '') ?>">
         </div>
         <div class="col-md-3">
           <label for="barangay" class="form-label fw-semibold">Barangay</label>
-         <input type="text" name="barangay" id="barangay" id="barangay" class="form-control" value="<?= htmlspecialchars($draftData['barangay'] ?? '') ?>">
+         <input type="text" name="barangay" id="barangay"  class="form-control" value="<?= htmlspecialchars($draftData['barangay'] ?? '') ?>">
         </div>
         <div class="col-md-3">
           <label for="municipality" class="form-label fw-semibold">Municipality</label>
-          <input type="text" name="municipality" id="municipality" id="municipality" class="form-control" value="<?= htmlspecialchars(string: $draftData['municipality'] ?? '') ?>">
+          <input type="text" name="municipality" id="municipality" " class="form-control" value="<?= htmlspecialchars(string: $draftData['municipality'] ?? '') ?>">
         </div>
       </div>
 
@@ -402,22 +418,22 @@ $draftData = $application_id ? loadDraftData($step, $application_id) : [];
       <div class="row g-3 mb-3">
         <div class="col-md-3">
           <label for="province" class="form-label fw-semibold">Province</label>
-          <input type="text" name="province" id="province" id="province" class="form-control"
+          <input type="text" name="province" id="province"  class="form-control"
             value="<?= htmlspecialchars(string: $draftData['province'] ?? '') ?>">
         </div>
         <div class="col-md-3">
           <label for="region" class="form-label fw-semibold">Region</label>
-          <input type="text" name="region" id="region" id="region" class="form-control"
+          <input type="text" name="region" id="region"  class="form-control"
             value="<?= htmlspecialchars($draftData['region'] ?? '') ?>">
         </div>
         <div class="col-md-3">
           <label for="landline" class="form-label fw-semibold">Landline No.</label>
-          <input type="tel" name="landline_no" id="landline_no" id="landline_no" class="form-control"
+          <input type="tel" name="landline_no"  id="landline_no" class="form-control"
             value="<?= htmlspecialchars($draftData['landline_no'] ?? '') ?>">
         </div>
         <div class="col-md-3">
           <label for="mobile" class="form-label fw-semibold">Mobile No.</label>
-          <input type="tel" name="mobile_no" id="mobile_no" id="mobile_no" class="form-control" required
+          <input type="tel" name="mobile_no" id="mobile_no" class="form-control" required
             value="<?= htmlspecialchars($draftData['mobile_no'] ?? '') ?>">
         </div>
       </div>
@@ -425,7 +441,7 @@ $draftData = $application_id ? loadDraftData($step, $application_id) : [];
       <!-- Row 6 -->
       <div class="mb-3">
         <label for="email" class="form-label fw-semibold">E-mail Address:</label>
-        <input type="email" name="email_address" id="email_address" id="email_address" class="form-control"
+        <input type="email" name="email_address"" id="email_address" class="form-control"
           placeholder="example@domain.com" required
           value="<?= htmlspecialchars($draftData['email_address'] ?? '') ?>">
       </div>

@@ -9,23 +9,30 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['applicant_id']) || !isset(
     exit;
 }
 
-$applicant_id = $_SESSION['applicant_id'];
-$application_id = $_SESSION['application_id'];
+$applicant_id   = (int)$_SESSION['applicant_id'];
+$application_id = (int)$_SESSION['application_id'];
 
-$step = 3;
+// ✅ Resolve application type (url -> post -> session)
+$type = strtolower($_GET['type'] ?? $_POST['type'] ?? ($_SESSION['application_type'] ?? 'new'));
+if ($type === 'renewal') $type = 'renew';
+if (!in_array($type, ['new','renew','lost'], true)) $type = 'new';
+$_SESSION['application_type'] = $type;
+
 // ✅ Load draft data using application_id
+$step = 3;
 $draftData = loadDraftData($step, $application_id);
 
-$type = $_SESSION['application_type'] ?? 'new';
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // ✅ Save draft using application_id
     saveDraftData($step, $_POST, $application_id);
 
-    // ✅ Redirect to merged Form4
+    if (($_POST['nav'] ?? '') === 'back') {
+        header("Location: form2.php?type=" . urlencode($type));
+        exit;
+    }
     header("Location: form4.php?type=" . urlencode($type));
     exit;
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -122,9 +129,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       <!-- Navigation Buttons -->
       <div class="d-flex justify-content-between">
-        <a href="form2.php?type=<?= $type ?>" class="btn btn-outline-primary">Back</a>
-        <button type="submit" class="btn btn-primary px-4">Next</button>
-      </div>
+  <button type="submit" name="nav" value="back" class="btn btn-outline-primary">Back</button>
+  <button type="submit" name="nav" value="next" class="btn btn-primary px-4">Next</button>
+</div>
+
     </form>
   </div>
 </body>

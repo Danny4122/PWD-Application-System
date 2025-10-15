@@ -1,18 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-  <meta charset="UTF-8">
-  <title>PWD Admin Sign-in</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-
-  <link rel="stylesheet" href="../../assets/css/global/login_signup.css">
-
-</head>
-
-<body>
+<?php session_start(); ?> 
+<!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8"> 
+<title>PWD Admin Sign-in</title> <meta name="viewport" content="width=device-width, initial-scale=1"> 
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"> 
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script> <link rel="stylesheet" href="../../assets/css/global/login_signup.css"> </head> <body>
 
   <div class="main-wrapper">
     <!-- Left Section -->
@@ -30,6 +20,22 @@
         <img src="../../assets/pictures/Logo.jpg" class="logo" alt="PWD Logo">
         <p style="font-size: 1.3rem; font-weight: 600;">Sign in as...</p>
 
+        <!-- Error banner -->
+        <?php if (!empty($_GET['err'])): 
+          $map = [
+            'empty_user' => 'Please enter your username.',
+            'empty_pwd'  => 'Please enter your password.',
+            'db_conn'    => 'Database connection error. Please try again.',
+            'no_account' => 'Account not found.',
+            'invalid_pwd'=> 'Incorrect password.',
+            'doctor_not_supported' => 'Doctor login not available yet.',
+            'invalid_email' => 'Invalid email format.', // legacy
+            'invalid_role'  => 'Invalid role selected.' // legacy
+          ];
+          $msg = $map[$_GET['err']] ?? 'Login error. Please try again.'; ?>
+          <div class="alert alert-danger py-2" role="alert"><?= htmlspecialchars($msg) ?></div>
+        <?php endif; ?>
+
         <!-- Toggle Role -->
         <div class="role-toggle mb-3">
           <input type="radio" name="role" id="admin" value="admin" checked hidden>
@@ -41,12 +47,13 @@
         </div>
 
         <!-- Login Form -->
-        <form action="admin_login_process.php" method="POST">
+          <form action="/backend/auth/admin_login_process.php" method="POST">
           <input type="hidden" name="role" id="selectedRole" value="admin">
 
           <div class="form-group">
-            <input type="email" name="email" class="form-control" placeholder="Email" required>
-            <span class="form-icon"><i class="fas fa-envelope"></i></span>
+            <!-- treat as username; change type to text to allow non-email usernames -->
+            <input type="text" name="email" class="form-control" placeholder="Username" required>
+            <span class="form-icon"><i class="fas fa-user"></i></span>
           </div>
           <div class="form-group">
             <input type="password" name="password" class="form-control" placeholder="Password" required>
@@ -64,7 +71,6 @@
   <script>
     const labels = document.querySelectorAll('.toggle-option');
     const roleInput = document.getElementById('selectedRole');
-
     labels.forEach(label => {
       label.addEventListener('click', () => {
         labels.forEach(l => l.classList.remove('active'));
@@ -75,5 +81,4 @@
   </script>
 
 </body>
-
 </html>

@@ -3,53 +3,61 @@ session_start();
 require_once '../../config/db.php';
 require_once '../../includes/DraftHelper.php';
 
+// ✅ Check session
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['applicant_id']) || !isset($_SESSION['application_id'])) {
     header("Location: ../../public/login_form.php");
     exit;
 }
 
-$applicant_id = $_SESSION['applicant_id'];
-$application_id = $_SESSION['application_id'];
+$applicant_id   = (int)$_SESSION['applicant_id'];
+$application_id = (int)$_SESSION['application_id'];
 
+// ✅ Resolve application type (url -> post -> session)
+$type = strtolower($_GET['type'] ?? $_POST['type'] ?? ($_SESSION['application_type'] ?? 'new'));
+if ($type === 'renewal') $type = 'renew';
+if (!in_array($type, ['new','renew','lost'], true)) $type = 'new';
+$_SESSION['application_type'] = $type;
+
+// ✅ Load draft data for Step 2
 $step = 2;
 $draftData = loadDraftData($step, $application_id);
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-        saveDraftData($step, $_POST, $application_id);
-
+    saveDraftData($step, $_POST, $application_id);
 
     // Optional: structured session caching for final submit
     $_SESSION['affiliation'] = [
-        'educational_attainment' => $_POST['educational_attainment'],
-        'employment_status' => $_POST['employment_status'],
-        'employment_category' => $_POST['employment_category'],
-        'occupation' => $_POST['occupation'],
-        'type_of_employment' => $_POST['type_of_employment'],
-        'organization_affiliated' => $_POST['organization_affiliated'],
-        'contact_person' => $_POST['contact_person'],
-        'office_address' => $_POST['office_address'],
-        'tel_no' => $_POST['tel_no'],
-        'sss_no' => $_POST['sss_no'],
-        'gsis_no' => $_POST['gsis_no'],
-        'pagibig_no' => $_POST['pagibig_no'],
-        'psn_no' => $_POST['psn_no'],
-        'philhealth_no' => $_POST['philhealth_no']
+        'educational_attainment' => $_POST['educational_attainment'] ?? null,
+        'employment_status'      => $_POST['employment_status'] ?? null,
+        'employment_category'    => $_POST['employment_category'] ?? null,
+        'occupation'             => $_POST['occupation'] ?? null,
+        'type_of_employment'     => $_POST['type_of_employment'] ?? null,
+        'organization_affiliated'=> $_POST['organization_affiliated'] ?? null,
+        'contact_person'         => $_POST['contact_person'] ?? null,
+        'office_address'         => $_POST['office_address'] ?? null,
+        'tel_no'                 => $_POST['tel_no'] ?? null,
+        'sss_no'                 => $_POST['sss_no'] ?? null,
+        'gsis_no'                => $_POST['gsis_no'] ?? null,
+        'pagibig_no'             => $_POST['pagibig_no'] ?? null,
+        'psn_no'                 => $_POST['psn_no'] ?? null,
+        'philhealth_no'          => $_POST['philhealth_no'] ?? null,
     ];
 
     $_SESSION['accomplishedby'] = [
-        'accomplished_by' => $_POST['accomplished_by'],
-        'last_name' => $_POST['acc_last_name'],
-        'first_name' => $_POST['acc_first_name'],
-        'middle_name' => $_POST['acc_middle_name']
+        'accomplished_by' => $_POST['accomplished_by'] ?? null,
+        'last_name'       => $_POST['acc_last_name'] ?? null,
+        'first_name'      => $_POST['acc_first_name'] ?? null,
+        'middle_name'     => $_POST['acc_middle_name'] ?? null,
     ];
 
     $_SESSION['familybackground'] = [
-        'father_name' => $_POST['father_name'],
-        'mother_name' => $_POST['mother_name'],
-        'guardian_name' => $_POST['guardian_name']
+        'father_name'   => $_POST['father_name'] ?? null,
+        'mother_name'   => $_POST['mother_name'] ?? null,
+        'guardian_name' => $_POST['guardian_name'] ?? null,
     ];
 
-    header("Location: form3.php");
+    // ✅ Redirect to step 3, keep ?type
+    header("Location: form3.php?type=" . urlencode($type));
     exit;
 }
 ?>
