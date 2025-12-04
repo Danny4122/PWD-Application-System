@@ -14,19 +14,45 @@ $application_id = $_SESSION['application_id'];
 $step = 4;
 $draftData = loadDraftData($step, $application_id);
 
-// after $draftData = loadDraftData($step, $application_id);
-$docRes = pg_query_params(
-  $conn,
-  "SELECT bodypic_path, barangaycert_path, medicalcert_path, old_pwd_id_path, affidavit_loss_path, cho_cert_path
-   FROM documentrequirements
-   WHERE application_id = $1
-   LIMIT 1",
-  [$application_id]
-);
-if ($docRes && pg_num_rows($docRes) > 0) {
-  $docRow = pg_fetch_assoc($docRes);
-  $draftData = array_merge($draftData ?? [], $docRow ?: []);
+// === Safe load of documentrequirements ===
+// (Handles missing cho_cert_path column or NULL values)
+
+$docRow = [];
+$sql = "SELECT bodypic_path, barangaycert_path, medicalcert_path, old_pwd_id_path, affidavit_loss_path, cho_cert_path
+        FROM documentrequirements
+        WHERE application_id = $1
+        LIMIT 1";
+
+$docRes = @pg_query_params($conn, $sql, [$application_id]);
+
+if ($docRes === false) {
+    // Query failed (maybe cho_cert_path column doesn't exist)
+    error_log('form4.php - SELECT failed: ' . pg_last_error($conn));
+
+    // Fallback query without cho_cert_path
+    $fallbackSql = "SELECT bodypic_path, barangaycert_path, medicalcert_path, old_pwd_id_path, affidavit_loss_path
+                    FROM documentrequirements
+                    WHERE application_id = $1
+                    LIMIT 1";
+    $docRes = @pg_query_params($conn, $fallbackSql, [$application_id]);
+
+    if ($docRes && pg_num_rows($docRes) > 0) {
+        $docRow = pg_fetch_assoc($docRes);
+    }
+} else {
+    if (pg_num_rows($docRes) > 0) {
+        $docRow = pg_fetch_assoc($docRes);
+    }
 }
+
+// Always ensure this key exists
+if (!array_key_exists('cho_cert_path', $docRow)) {
+    $docRow['cho_cert_path'] = null;
+}
+
+// Merge document paths into the draft data
+$draftData = array_merge($draftData ?? [], $docRow);
+
 
 
 
