@@ -1,223 +1,275 @@
 <?php
+// src/cho/CHO_dashboard.php  (adjust path/name if needed)
 session_start();
-require_once __DIR__ . '/../../config/paths.php';
 
-if (!isset($_SESSION['username']) || ($_SESSION['role'] ?? '') !== 'doctor') {
-    // if doctors share the same 'admin' role change the check accordingly
-    header('Location: ' . ADMIN_BASE . '/signin.php');
-    exit;
-}
+// (Optional) If you use your central paths constant, you can require it here.
+// require_once __DIR__ . '/../../config/paths.php';
 
-/*
-  Replace the placeholder variables below with real DB queries.
-  Examples:
-  - $today_patients = SELECT COUNT(*) FROM consultations WHERE doctor_id = ? AND date = CURDATE();
-  - $upcoming_appts = SELECT COUNT(*) FROM appointments WHERE doctor_id = ? AND date >= CURDATE() AND date <= CURDATE() + INTERVAL 7 DAY;
-*/
+// Pull username and role from session safely
+$username = isset($_SESSION['username']) ? (string) $_SESSION['username'] : null;
+$role = isset($_SESSION['role']) ? (string) $_SESSION['role'] : null;
 
-$today_patients = 8;
-$upcoming_appts = 12;
-$pending_labs = 5;
-$active_cases = 34;
-
-// monthly appointment sample data (12 months)
-$months = json_encode(array_map(function($i){ return "Month $i"; }, range(1,12)));
-$appts_monthly = json_encode([40, 28, 55, 60, 72, 68, 40, 80, 74, 90, 85, 70]);
-
-// Diagnoses (example labels + counts) -- replace with actual diagnosis names and counts
-$diag_labels = json_encode(["Hypertension","Diabetes","TB","Asthma","Stroke"]);
-$diag_values = json_encode([34, 28, 12, 18, 6]);
-
-// Gender and age distributions
-$gender_labels = json_encode(["Male","Female"]);
-$gender_values = json_encode([52,48]);
-$age_labels = json_encode(["0-10","11-20","21-30","31-40","41-50","51-60","61+"]);
-$age_values = json_encode([2,6,18,20,12,8,6]);
+// Helper to escape output
+function h($s) { return htmlspecialchars((string)$s, ENT_QUOTES | ENT_SUBSTITUTE); }
 ?>
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>CHO — Doctor Dashboard</title>
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CHO Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-  <link rel="stylesheet" href="<?= APP_BASE_URL ?>/assets/css/global/base.css">
-  <link rel="stylesheet" href="<?= APP_BASE_URL ?>/assets/css/global/layout.css">
-  <link rel="stylesheet" href="<?= APP_BASE_URL ?>/assets/css/global/component.css">
-
-  <style>
-    :root{--accent:#2f2fbf;--card-bg:#fff;--muted:#6c757d;--shadow:0 6px 18px rgba(30,35,90,0.06);}
-    body{background:#f6f7fb;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;}
-    .sidebar{width:260px;background:linear-gradient(180deg,#11174a,#163273);color:#fff;position:fixed;top:0;left:0;bottom:0;padding:18px;}
-    .sidebar .logo{display:flex;gap:10px;align-items:center;margin-bottom:8px}
-    .main{margin-left:280px;padding:26px;min-height:100vh}
-    .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-    .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:18px}
-    .card-stat{background:var(--card-bg);padding:16px;border-radius:10px;box-shadow:var(--shadow);display:flex;justify-content:space-between;align-items:center}
-    .dashboard-grid{display:grid;grid-template-columns:1fr 420px;gap:16px}
-    .panel{background:var(--card-bg);padding:14px;border-radius:10px;box-shadow:var(--shadow)}
-    .chart-card{height:230px}
-    @media(max-width:1100px){.dashboard-grid{grid-template-columns:1fr}.main{margin-left:90px}.sidebar{width:90px}}
-  </style>
+  <!-- Global CSS -->
+  <link rel="stylesheet" href="../../assets/css/global/base.css">
+  <link rel="stylesheet" href="../../assets/css/global/layout.css">
+  <link rel="stylesheet" href="../../assets/css/global/component.css">
+  
 </head>
 <body>
+  <!-- Sidebar -->
   <div class="sidebar">
     <div class="logo">
-      <img src="<?= APP_BASE_URL ?>/assets/pictures/cho-logo.png" width="44" alt="CHO">
-      <div>
-        <h5 style="margin:0">CHO</h5>
-        <small style="opacity:.85">Doctor</small>
+      <img src="../../assets/pictures/white.png" alt="logo" width="45">
+      <img src="../../assets/pictures/CHO logo.png" alt="logo 2" width="45">
+      <h4>CHO</h4>
+    </div>
+    <hr>
+
+    <a class="active">
+      <i class="fas fa-chart-line me-2"></i><span>Dashboard</span>
+    </a>
+
+    <a href="members.php">
+      <i class="fas fa-wheelchair me-2"></i><span>Members</span>
+    </a>
+
+    <a href="applications.php">
+      <i class="fas fa-users me-2"></i><span>Applications</span>
+    </a>
+
+    <div class="sidebar-item">
+      <div class="toggle-btn d-flex justify-content-between align-items-center">
+        <span class="no-wrap d-flex align-items-center">
+          <i class="fas fa-folder me-2"></i><span>Manage Applications</span>
+        </span>
+        <i class="fas fa-chevron-down chevron-icon"></i>
+      </div>
+
+      <div class="submenu">
+
+        <!-- ACCEPTED -->
+        <a href="../doctor/accepted.php" class="submenu-link d-flex align-items-center ps-4"
+           style="padding-top: 3px; padding-bottom: 3px; margin: 5px 0;">
+          <span class="icon" style="width: 18px;"><i class="fas fa-user-check"></i></span>
+          <span class="ms-2">Accepted</span>
+        </a>
+
+        <!-- PENDING -->
+        <a href="../doctor/pending.php" class="submenu-link d-flex align-items-center ps-4"
+           style="padding-top: 3px; padding-bottom: 3px; margin: 5px 0;">
+          <span class="icon" style="width: 18px;"><i class="fas fa-hourglass-half"></i></span>
+          <span class="ms-2">Pending</span>
+        </a>
+
+        <!-- DENIED -->
+        <a href="../doctor/denied.php" class="submenu-link d-flex align-items-center ps-4"
+           style="padding-top: 3px; padding-bottom: 3px; margin: 5px 0;">
+          <span class="icon" style="width: 18px;"><i class="fas fa-user-times"></i></span>
+          <span class="ms-2">Denied</span>
+        </a>
+
       </div>
     </div>
 
-    <a href="<?= ADMIN_BASE ?>/dashboard.php" class="nav-link active" style="display:flex;gap:10px;padding:10px;border-radius:8px;color:#fff;text-decoration:none;">
-      <i class="fas fa-stethoscope"></i><span>Dashboard</span>
+    <!-- LOGOUT -->
+    <a href="../doctor/logout.php">
+      <i class="fas fa-sign-out-alt me-2"></i><span>Logout</span>
     </a>
 
-    <a href="<?= ADMIN_BASE ?>/my_patients.php" class="nav-link" style="display:flex;gap:10px;padding:10px;color:#fff;text-decoration:none;"><i class="fas fa-users-medical"></i><span>My Patients</span></a>
-
-    <a href="<?= ADMIN_BASE ?>/appointments.php" class="nav-link" style="display:flex;gap:10px;padding:10px;color:#fff;text-decoration:none;"><i class="fas fa-calendar-check"></i><span>Appointments</span></a>
-
-    <a href="<?= ADMIN_BASE ?>/consultations.php" class="nav-link" style="display:flex;gap:10px;padding:10px;color:#fff;text-decoration:none;"><i class="fas fa-notes-medical"></i><span>Consultations</span></a>
-
-    <a href="<?= ADMIN_BASE ?>/prescriptions.php" class="nav-link" style="display:flex;gap:10px;padding:10px;color:#fff;text-decoration:none;"><i class="fas fa-prescription-bottle-alt"></i><span>Prescriptions</span></a>
-
-    <a href="<?= ADMIN_BASE ?>/lab_results.php" class="nav-link" style="display:flex;gap:10px;padding:10px;color:#fff;text-decoration:none;"><i class="fas fa-vials"></i><span>Lab Results</span></a>
-
-    <a href="<?= ADMIN_BASE ?>/reports.php" class="nav-link" style="display:flex;gap:10px;padding:10px;color:#fff;text-decoration:none;"><i class="fas fa-file-medical-alt"></i><span>Reports</span></a>
-
-    <div style="margin-top:auto">
-      <a href="<?= APP_BASE_URL ?>/logout.php" class="nav-link" style="display:flex;gap:10px;padding:10px;color:#fff;text-decoration:none;"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
-    </div>
   </div>
 
   <div class="main">
-    <div class="topbar">
-      <div style="display:flex;gap:10px;align-items:center">
-        <div class="toggle-btn" onclick="toggleSidebar()" style="background:#fff1;padding:8px;border-radius:8px;cursor:pointer"><i class="fas fa-bars"></i></div>
-        <h4 style="margin:0">Doctor Dashboard — City Health Office</h4>
+    <div class="topbar d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center">
+        <div class="toggle-btn" onclick="toggleSidebar()">
+          <i class="fas fa-bars"></i>
+        </div>
       </div>
 
-      <div style="display:flex;align-items:center;gap:12px">
-        <div style="text-align:right">
-          <div style="font-weight:700"><?= htmlspecialchars($_SESSION['username'] ?? 'Doctor') ?></div>
-          <div style="font-size:.85rem;color:#6c757d">Physician</div>
+      <div class="d-flex flex-column align-items-end">
+        <div class="d-flex align-items-center ms-3 mt-2 mb-2" style="font-size: 1.4rem;">
+          <strong><?= h($username ?? 'User') ?></strong>
+          <i class="fas fa-user-circle ms-3 me-2 mb-2 mt-2" style="font-size: 2.5rem;"></i>
         </div>
-        <i class="fas fa-user-circle" style="font-size:2rem;color:#6c757d"></i>
+
+
       </div>
     </div>
 
-    <div class="stat-row">
+    <div class="cards">
       <div class="card-stat">
-        <div><small>Today's Patients</small><h3><?= number_format($today_patients) ?></h3></div>
-        <i class="fas fa-user-injured" style="color:#2f2fbf"></i>
+        <div>
+          <small>PWDs</small>
+          <h3>1025</h3>
+        </div>
+        <i class="fas fa-users"></i>
       </div>
       <div class="card-stat">
-        <div><small>Upcoming Appts (7d)</small><h3><?= number_format($upcoming_appts) ?></h3></div>
-        <i class="fas fa-calendar-plus" style="color:#2f2fbf"></i>
+        <div>
+          <small>NEW</small>
+          <h3>44</h3>
+        </div>
+        <i class="fas fa-user-plus"></i>
       </div>
       <div class="card-stat">
-        <div><small>Pending Labs</small><h3><?= number_format($pending_labs) ?></h3></div>
-        <i class="fas fa-vial" style="color:#2f2fbf"></i>
+        <div>
+          <small>RENEW</small>
+          <h3>150</h3>
+        </div>
+        <i class="fas fa-id-card"></i>
       </div>
       <div class="card-stat">
-        <div><small>Active Cases</small><h3><?= number_format($active_cases) ?></h3></div>
-        <i class="fas fa-procedures" style="color:#2f2fbf"></i>
+        <div>
+          <small>LOST ID</small>
+          <h3>65</h3>
+        </div>
+        <i class="fas fa-id-badge"></i>
       </div>
     </div>
 
-    <div class="dashboard-grid">
-      <div style="display:flex;flex-direction:column;gap:16px">
-        <div class="panel" style="height:420px">
-          <div style="font-weight:700;margin-bottom:10px">Appointments This Year</div>
-          <canvas id="apptsChart" style="height:100%"></canvas>
-        </div>
-
-        <div class="panel">
-          <div style="font-weight:700;margin-bottom:10px">Diagnoses Breakdown</div>
-          <div class="chart-card">
-            <canvas id="diagBar"></canvas>
-          </div>
-        </div>
-      </div>
-
-      <div style="display:flex;flex-direction:column;gap:16px">
-        <div class="panel chart-card">
-          <div style="font-weight:700;margin-bottom:6px">Patient Gender</div>
-          <canvas id="genderPie" style="max-width:260px;margin:0 auto"></canvas>
-        </div>
-
-        <div class="panel chart-card">
-          <div style="font-weight:700;margin-bottom:6px">Patient Age Distribution</div>
-          <canvas id="ageLine"></canvas>
-        </div>
-
-        <div class="panel">
-          <div style="font-weight:700;margin-bottom:10px">Quick Actions</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <a class="btn btn-sm btn-primary" href="<?= ADMIN_BASE ?>/appointments.php">View Appointments</a>
-            <a class="btn btn-sm btn-outline-primary" href="<?= ADMIN_BASE ?>/my_patients.php">My Patients</a>
-            <a class="btn btn-sm btn-outline-secondary" href="<?= ADMIN_BASE ?>/lab_results.php">Review Labs</a>
-            <a class="btn btn-sm btn-outline-success" href="<?= ADMIN_BASE ?>/prescriptions.php">Prescribe</a>
-          </div>
-        </div>
-      </div>
+    <div class="chart-container">
+      <canvas id="statsChart"></canvas>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    const months = <?= $months ?>;
-    const apptsMonthly = <?= $appts_monthly ?>;
-    const diagLabels = <?= $diag_labels ?>;
-    const diagValues = <?= $diag_values ?>;
-    const genderLabels = <?= $gender_labels ?>;
-    const genderValues = <?= $gender_values ?>;
-    const ageLabels = <?= $age_labels ?>;
-    const ageValues = <?= $age_values ?>;
+    const ctx = document.getElementById('statsChart');
+    ctx.height = 460;
 
-    // Appointments area/line (big)
-    new Chart(document.getElementById('apptsChart'), {
+    new Chart(ctx, {
       type: 'line',
-      data: { labels: months, datasets: [{ label: 'Appointments', data: apptsMonthly, fill:true, backgroundColor:'rgba(63,81,181,0.12)', borderColor:'#3f51b5', tension:0.3, pointRadius:4 }] },
-      options:{ maintainAspectRatio:false, scales:{ y:{ beginAtZero:true } }, plugins:{ legend:{display:false} } }
-    });
-
-    // Diagnoses horizontal bar
-    new Chart(document.getElementById('diagBar'), {
-      type: 'bar',
-      data:{ labels: diagLabels, datasets:[{ label:'Count', data: diagValues, barThickness:14, borderRadius:6 }]},
-      options:{ indexAxis:'y', maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ x:{ beginAtZero:true } } }
-    });
-
-    // Gender pie
-    new Chart(document.getElementById('genderPie'), {
-      type: 'pie',
-      data:{ labels: genderLabels, datasets:[{ data: genderValues, hoverOffset:8 }]},
-      options:{ maintainAspectRatio:false, plugins:{ legend:{position:'bottom'} } }
-    });
-
-    // Age distribution line
-    new Chart(document.getElementById('ageLine'), {
-      type: 'line',
-      data:{ labels: ageLabels, datasets:[{ label:'Patients', data: ageValues, fill:false, borderColor:'#2f2fbf', tension:0.3, pointRadius:3 }]},
-      options:{ maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ y:{ beginAtZero:true } } }
+      data: {
+        labels: Array.from({ length: 12 }, (_, i) => `Month ${i + 1}`),
+        datasets: [
+          {
+            label: 'New Applications',
+            data: [400, 200, 500, 250, 700, 450, 100, 600, 300, 700, 500, 400],
+            backgroundColor: 'rgba(66, 135, 245, 0.3)',
+            borderColor: '#4287f5',
+            borderWidth: 2,
+            pointBackgroundColor: '#4287f5',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            fill: true,
+            lineTension: 0.3
+          },
+          {
+            label: 'Renew Applications',
+            data: [750, 600, 700, 900, 950, 850, 300, 700, 200, 600, 700, 500],
+            backgroundColor: 'rgba(102, 51, 255, 0.3)',
+            borderColor: '#6633ff',
+            borderWidth: 2,
+            pointBackgroundColor: '#6633ff',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            fill: true,
+            lineTension: 0.3
+          },
+          {
+            label: 'Lost ID Applications',
+            data: [150, 120, 180, 210, 170, 160, 140, 220, 180, 250, 230, 210],
+            backgroundColor: 'rgba(255, 99, 132, 0.3)',
+            borderColor: '#FF6384',
+            borderWidth: 2,
+            pointBackgroundColor: '#FF6384',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            fill: true,
+            lineTension: 0.3
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: '#ddd',
+            },
+            ticks: {
+              font: {
+                size: 12,
+              }
+            }
+          },
+          x: {
+            grid: {
+              color: '#ddd',
+            },
+            ticks: {
+              font: {
+                size: 12,
+              }
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            labels: {
+              font: {
+                size: 14,
+              },
+              color: '#333'
+            }
+          },
+          tooltip: {
+            backgroundColor: '#444',
+            titleColor: '#fff',
+            bodyColor: '#fff'
+          }
+        }
+      }
     });
   </script>
+
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
   <script>
-    function toggleSidebar(){
-      const sb = document.querySelector('.sidebar'), m = document.querySelector('.main');
-      if(sb.style.width && sb.style.width === '90px'){
-        sb.style.width = '260px'; m.style.marginLeft = '280px';
-      } else {
-        sb.style.width = '90px'; m.style.marginLeft = '110px';
-      }
+    document.querySelectorAll('.toggle-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const submenu = btn.nextElementSibling;
+        const icon = btn.querySelector('.chevron-icon');
+        submenu.style.maxHeight = submenu.style.maxHeight ? null : submenu.scrollHeight + "px";
+        icon.classList.toggle('rotate');
+      });
+    });
+
+    // Toggle Sidebar visibility
+    function toggleSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      const main = document.querySelector('.main');
+      sidebar.classList.toggle('closed');
+      main.classList.toggle('shifted');
     }
   </script>
+
+  <style>
+    .rotate {
+      transform: rotate(180deg);
+      transition: transform 0.3s ease;
+    }
+  </style>
+
 </body>
+
 </html>

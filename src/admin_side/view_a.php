@@ -8,6 +8,14 @@ require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../../config/paths.php';
 session_start();
 
+// ensure session already started
+if (session_status() === PHP_SESSION_NONE) session_start();
+
+// create a CSRF token once per session (safe to call repeatedly)
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(24));
+}
+
 // AUTH
 if (empty($_SESSION['user_id']) || empty($_SESSION['is_admin'])) {
     header('Location: ' . rtrim(APP_BASE_URL, '/') . '/src/admin_side/signin.php');
@@ -340,9 +348,34 @@ if (!empty($_GET['debug']) && !empty($_SESSION['is_admin'])) {
           </small>
         </div>
 
-        <div class="text-end">
-          <div class="mt-1">
-          </div>
+        <div class="text-end d-flex align-items-center">
+          <?php
+            // workflow_status badge (friendly color mapping)
+            $wf = $application['workflow_status'] ?? ($application['status'] ?? 'Pending');
+            $badgeClass = 'bg-secondary';
+            switch (strtolower((string)$wf)) {
+              case 'submitted':       $badgeClass = 'bg-warning text-dark'; break;
+              case 'pdao_review':     $badgeClass = 'bg-info text-dark'; break;
+              case 'cho_review':      $badgeClass = 'bg-primary'; break;
+              case 'verified':        $badgeClass = 'bg-success'; break;
+              case 'approved':        $badgeClass = 'bg-success'; break;
+              case 'pdao_rejected':
+              case 'rejected':        $badgeClass = 'bg-danger'; break;
+              default:                $badgeClass = 'bg-secondary'; break;
+            }
+          ?>
+          <span class="badge <?= h($badgeClass) ?> me-3"><?= h($wf) ?></span>
+
+          <?php if (!empty($draftData['pic_url'])):
+              // clickable header photo -> opens via this page's file serving if possible (use basename)
+              $picBasename = basename(parse_url($draftData['pic_url'], PHP_URL_PATH) ?: $draftData['pic_url']);
+              $viewHref = h(rtrim($_SERVER['PHP_SELF'], '/')) . '?id=' . urlencode($app_id) . '&file_action=view&file=' . urlencode($picBasename);
+          ?>
+
+          <?php else: ?>
+            <div style="display:inline-block;text-align:center;color:#fff;font-weight:600;padding:.35rem .5rem;background:rgba(255,255,255,0.12);border-radius:6px">No photo</div>
+          <?php endif; ?>
+
         </div>
 
       </div>
@@ -362,20 +395,104 @@ if (!empty($_GET['debug']) && !empty($_SESSION['is_admin'])) {
             }
         ?>
 
-        <div class="mt-4 border-top pt-3">
-          <form method="post" action="<?= h(rtrim(APP_BASE_URL, '/') . '/src/admin_side/change_status.php') ?>">
-            <?php if (empty($_SESSION['csrf_token'])) $_SESSION['csrf_token'] = bin2hex(random_bytes(24)); ?>
-            <input type="hidden" name="csrf_token" value="<?= h($_SESSION['csrf_token']) ?>">
-            <input type="hidden" name="application_id" value="<?= h($app_id) ?>">
-            <div class="mb-3"><label>Remarks (optional)</label><textarea name="remarks" class="form-control" rows="3" placeholder="Enter remarks..."></textarea></div>
-            <button name="action" value="approve" class="btn btn-success">Approve</button>
-            <button name="action" value="reject" class="btn btn-danger">Reject</button>
-            <a href="<?= h(rtrim(APP_BASE_URL, '/') . '/src/admin_side/application_review.php') ?>" class="btn btn-outline-secondary ms-2">Back to list</a>
-          </form>
-        </div>
-      </div>
+        <!-- Application History (AJAX) -->
+<?php
+// -------- server-side render of application history (replace AJAX) --------
+echo '<div class="mt-4">';
+echo '<div class="card"><div class="card-body"><h6 class="card-title">Application History</h6>';
+
+$hist_sql = "SELECT hist_id, from_status, to_status, changed_by, role, remarks, created_at
+             FROM application_status_history
+             WHERE application_id = $1
+             ORDER BY created_at ASC";
+$hist_res = @pg_query_params($conn, $hist_sql, [$app_id]);
+
+if ($hist_res === false) {
+    // DB error - show friendly message and log
+    error_log('get_application_history error: ' . pg_last_error($conn));
+    echo '<div class="text-danger small">Unable to load history (server error).</div>';
+} else {
+    $rows = pg_fetch_all($hist_res);
+    if (empty($rows)) {
+        echo '<div class="text-muted small">No history available.</div>';
+    } else {
+        echo '<ul class="list-unstyled mb-0">';
+        foreach ($rows as $h) {
+            $when = !empty($h['created_at']) ? htmlspecialchars((string)$h['created_at']) : '';
+            $from = htmlspecialchars($h['from_status'] ?? '-');
+            $to   = htmlspecialchars($h['to_status'] ?? '-');
+            $who  = '';
+            if (!empty($h['changed_by'])) $who = ' by ' . htmlspecialchars($h['changed_by']);
+            if (!empty($h['role'])) $who .= ' (' . htmlspecialchars($h['role']) . ')';
+            $remarks = !empty($h['remarks']) ? '<div class="small text-muted mt-1">Remarks: ' . nl2br(htmlspecialchars($h['remarks'])) . '</div>' : '';
+            echo '<li class="mb-3"><strong>' . $when . '</strong> — ' . $from . ' → ' . $to . $who . $remarks . '</li>';
+        }
+        echo '</ul>';
+    }
+}
+echo '</div></div>';
+echo '</div>';
+// -------- end server-side history render --------
+?>
+
+
+           <!-- PDAO action form -> use api/admin_action.php -->
+<div class="mt-4 border-top pt-3">
+<form id="pdao-action-form" method="post" action="<?= h(rtrim(APP_BASE_URL, '/') . '/api/admin_action.php') ?>">
+    <input type="hidden" name="application_id" value="<?= h($app_id) ?>">
+    <?php if (empty($_SESSION['csrf_token'])) $_SESSION['csrf_token'] = bin2hex(random_bytes(24)); ?>
+    <input type="hidden" name="csrf_token" value="<?= h($_SESSION['csrf_token']) ?>">
+
+    <div class="mb-3">
+    <label>Remarks (optional — required when rejecting / requesting info)</label>
+    <textarea id="pdao-remarks" name="remarks" class="form-control" rows="3" placeholder="Enter remarks..."></textarea>
     </div>
-  </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <button type="button" class="btn btn-primary" data-action="forward_to_cho">Forward to CHO</button>
+    <button type="button" class="btn btn-warning" data-action="request_more_info">Request More Info</button>
+    <button type="button" class="btn btn-danger" data-action="reject">Reject</button>
+
+    <a href="<?= h(rtrim(APP_BASE_URL, '/') . '/src/admin_side/application_review.php') ?>" class="btn btn-outline-secondary ms-2">Back to list</a>
+</form>
+</div>
+
+<script>
+document.querySelectorAll('#pdao-action-form button[data-action]').forEach(btn=>{
+  btn.addEventListener('click', async function(e){
+    const action = this.dataset.action;
+    const remarks = document.getElementById('pdao-remarks').value.trim();
+    // require remarks for certain actions client-side
+    if ((action === 'reject' || action === 'request_more_info') && remarks === '') {
+      alert('Remarks are required for this action.');
+      return;
+    }
+    // send via fetch
+    const form = document.getElementById('pdao-action-form');
+    const data = new FormData(form);
+    data.set('action', action);
+    try {
+      const resp = await fetch(form.action, { method: 'POST', body: data });
+      const json = await resp.json();
+      if (!resp.ok || !json.success) {
+        alert(json.error || 'Server error');
+        return;
+      }
+      // redirect if server asks
+      if (json.redirect) {
+        window.location.href = json.redirect;
+      } else {
+        // otherwise reload to show updated status and history
+        window.location.reload();
+      }
+    } catch(err){
+      console.error(err);
+      alert('Network error');
+    }
+  });
+});
+</script>
+
+
+
 </body>
 </html>

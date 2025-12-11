@@ -73,7 +73,7 @@ if (!isset($_SESSION['username']) || ($_SESSION['role'] ?? '') !== 'admin') {
     </div>
   </div>
 
-  <a href="<?= APP_BASE_URL ?>/logout.php" class="nav-link">
+  <a href="<?= APP_BASE_URL ?>/src/admin_side/logout.php" class="nav-link">
     <i class="fas fa-sign-out-alt me-2"></i><span>Logout</span>
   </a>
 </div>

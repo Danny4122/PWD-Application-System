@@ -194,7 +194,7 @@ $curPage = basename($_SERVER['SCRIPT_NAME']);
       </div>
     </div>
 
-    <a href="<?= rtrim(APP_BASE_URL, '/') . '/logout.php' ?>" class="nav-link">
+    <a href="<?= rtrim(APP_BASE_URL, '/') . '/src/admin_side/logout.php' ?>" class="nav-link">
       <i class="fas fa-sign-out-alt me-2"></i> Logout
     </a>
   </div>
